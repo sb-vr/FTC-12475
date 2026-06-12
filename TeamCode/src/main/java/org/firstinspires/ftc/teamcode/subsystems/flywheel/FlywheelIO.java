@@ -1,19 +1,20 @@
-package org.firstinspires.ftc.teamcode.subsystems.shooter;
+package org.firstinspires.ftc.teamcode.subsystems.flywheel;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 
-public class ShooterIO {
-    private DcMotor s1;
+public class FlywheelIO {
+    private DcMotor s1, s2;
 
     private double targetPower = 0.0;
     private double currentPower = 0.0;
     private double maxRampRate = 0.05;
     private boolean shooting = true;
     private double shootingPower;
-    public ShooterIO(DcMotor s1) {
+    public FlywheelIO(DcMotor s1, DcMotor s2) {
         this.s1 = s1;
+        this.s2 = s2;
     }
 
     public void updateShooter(Gamepad gamepad1) {
@@ -34,7 +35,9 @@ public class ShooterIO {
             if (currentPower < targetPower) currentPower = targetPower;
         }
 
+        //ToDo check if the which motor has to be reversed
         s1.setPower(currentPower);
+        s2.setPower(currentPower);
     }
 
 //    public double lookup(double x, double[] bounds, double[] values) {
