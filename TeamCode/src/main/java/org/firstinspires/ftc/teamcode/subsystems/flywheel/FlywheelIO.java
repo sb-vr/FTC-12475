@@ -5,12 +5,12 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 
 public class FlywheelIO {
-    private DcMotor s1, s2;
+    private final DcMotor s1, s2;
 
     private double targetPower = 0.0;
     private double currentPower = 0.0;
     private double maxRampRate = 0.05;
-    private boolean shooting = true;
+    private boolean shooting = false;
     private double shootingPower;
     public FlywheelIO(DcMotor s1, DcMotor s2) {
         this.s1 = s1;
@@ -22,7 +22,7 @@ public class FlywheelIO {
             shooting = !shooting;
         }
         if (shooting) {
-            targetPower = shootingPower;
+             targetPower = shootingPower;
         } else {
             targetPower = 0.0;
         }
@@ -35,7 +35,6 @@ public class FlywheelIO {
             if (currentPower < targetPower) currentPower = targetPower;
         }
 
-        //ToDo check if the which motor has to be reversed
         s1.setPower(currentPower);
         s2.setPower(currentPower);
     }

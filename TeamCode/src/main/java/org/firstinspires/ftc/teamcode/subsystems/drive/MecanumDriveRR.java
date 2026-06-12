@@ -43,6 +43,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.roadrunnerMeuk.Drawing;
 import org.firstinspires.ftc.teamcode.roadrunnerMeuk.Localizer;
+import org.firstinspires.ftc.teamcode.roadrunnerMeuk.PinpointLocalizer;
 import org.firstinspires.ftc.teamcode.roadrunnerMeuk.messages.DriveCommandMessage;
 import org.firstinspires.ftc.teamcode.roadrunnerMeuk.messages.MecanumCommandMessage;
 import org.firstinspires.ftc.teamcode.roadrunnerMeuk.messages.MecanumLocalizerInputsMessage;
@@ -58,14 +59,14 @@ public final class MecanumDriveRR {
     public static class Params {
         // IMU orientation
         public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
-                RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD;
+                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.LEFT;
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
         // drive model parameters
-        public double inPerTick = 23.7204724409/537;
+        public double inPerTick = 23.7204724409/1760;
         public double lateralInPerTick = inPerTick;
-        public double trackWidthTicks = 615.7619187369128;
+        public double trackWidthTicks = 920.6 / (23.7204724409/1760);
 
         // feedforward parameters (in tick units)
         public double kS = 0.8210600657352353435;
@@ -135,11 +136,13 @@ public final class MecanumDriveRR {
             rightBack = new OverflowEncoder(new RawEncoder(MecanumDriveRR.this.rightBack));
             rightFront = new OverflowEncoder(new RawEncoder(MecanumDriveRR.this.rightFront));
 
+            leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+            rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
+            leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+            rightBack.setDirection(DcMotorSimple.Direction.FORWARD);
+
             imu = lazyImu.get();
 
-            leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
-            rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
-            rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
             this.pose = pose;
         }
 
@@ -233,12 +236,17 @@ public final class MecanumDriveRR {
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
+        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightBack.setDirection(DcMotorSimple.Direction.FORWARD);
+        
         lazyImu = new LazyHardwareMapImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
                 PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        localizer = new DriveLocalizer(pose);
+        localizer = new PinpointLocalizer(hardwareMap, PARAMS.inPerTick, pose);
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
