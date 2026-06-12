@@ -91,6 +91,9 @@ public class OpMode extends LinearOpMode {
                 if (intake != null) intake.setPower(1);
                 if (storage != null) storage.setPower(1);
             }
+
+            double tagDistance = vision.getTagDistance(20).ftcPose.range;
+            telemetry.addLine(Double.toString(tagDistance));
         }
 
         telemetry.addLine(imu.getRobotYawPitchRollAngles().toString());

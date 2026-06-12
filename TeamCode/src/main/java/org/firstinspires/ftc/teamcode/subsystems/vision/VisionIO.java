@@ -31,13 +31,18 @@ public class VisionIO {
                 .build();
     }
 
-    public AprilTagDetection updateVision() {
+    public AprilTagDetection getTagDistance(int targetId) {
         List<AprilTagDetection> detections = tagProcessor.getDetections();
-        if (detections.size() > 0) {
-            return detections.get(0);
+
+        for (AprilTagDetection detection : detections) {
+            if (detection.id == targetId) {
+                return detection;
+            }
         }
+
         return null;
     }
+
     public void stop() {
         if (visionPortal != null) {
             visionPortal.close();
