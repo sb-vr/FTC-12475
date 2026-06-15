@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.Constants.ALLIANCE_TAG_ID;
+
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -7,10 +9,14 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.subsystems.Hood.HoodIO;
 import org.firstinspires.ftc.teamcode.subsystems.drive.MecanumDriveRR;
 import org.firstinspires.ftc.teamcode.subsystems.intake.IntakeIO;
 import org.firstinspires.ftc.teamcode.subsystems.flywheel.FlywheelIO;
@@ -22,13 +28,16 @@ import org.firstinspires.ftc.teamcode.subsystems.vision.VisionLocalize;
 public class OpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        DcMotor s1 = null, s2 = null, i = null, st = null;
+        DcMotor i = null, st = null;
+        DcMotorEx  s1 = null, s2 = null;
+        Servo h = null;
         WebcamName camera = null;
 
-        try { s1 = hardwareMap.dcMotor.get("flywheel1"); } catch (Exception e) { telemetry.addLine("Missing: flywheel1"); }
-        try { s2 = hardwareMap.dcMotor.get("flywheel2"); } catch (Exception e) {telemetry.addLine("Mising: flywheel2"); }
+        try { s1 = hardwareMap.get(DcMotorEx.class, "flywheel1"); } catch (Exception e) { telemetry.addLine("Missing: flywheel1"); }
+        try { s2 = hardwareMap.get(DcMotorImplEx.class, "flywheel2"); } catch (Exception e) {telemetry.addLine("Mising: flywheel2"); }
         try { st = hardwareMap.dcMotor.get("storage"); } catch (Exception e) { telemetry.addLine("Missing: storage"); }
         try { i = hardwareMap.dcMotor.get("intake"); } catch (Exception e) { telemetry.addLine("Missing: intake"); }
+        try { h = hardwareMap.get(Servo.class, "hood"); } catch (Exception e) { telemetry.addLine("Missing: hood"); }
 
         try { camera = hardwareMap.get(WebcamName.class, "Webcam 1"); } catch (Exception e) { telemetry.addLine("Missing: Webcam 1"); }
 
@@ -44,17 +53,20 @@ public class OpMode extends LinearOpMode {
 
         if (s1 != null) s1.setDirection(DcMotorSimple.Direction.FORWARD);
         if (s2 != null) s2.setDirection(DcMotorSimple.Direction.REVERSE);
-        if(st != null) st.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (st != null) st.setDirection(DcMotorSimple.Direction.REVERSE);
         if (i != null) i.setDirection(DcMotorSimple.Direction.REVERSE);
+
 
         MecanumDriveRR drive = new MecanumDriveRR(hardwareMap, new Pose2d(0,0,0));
 
         FlywheelIO flywheel= (s1 != null && s2 != null) ? new FlywheelIO(s1, s2) : null;
-        if (flywheel!= null) {flywheel.setRampRate(Constants.SHOOTER_RAMP_RATE); flywheel.setShootingPower(Constants.DEFAULT_SHOOTER_SPEED);}
+        if (flywheel!= null) {flywheel.setRampRate(Constants.SHOOTER_RAMP_RATE);}
 
         IntakeIO intake = (i != null) ? new IntakeIO(i) : null;
 
         StorageIO storage = (st != null) ? new StorageIO(st) : null;
+
+        HoodIO hood = (h != null) ? new HoodIO(h) : null;
 
         VisionIO vision = (camera != null) ? new VisionIO(camera) : null;
 
@@ -65,14 +77,29 @@ public class OpMode extends LinearOpMode {
 
         while (opModeIsActive()) {
             if (drive != null) {
-                drive.setDrivePowers(new PoseVelocity2d(
-                        new Vector2d(
-                                -gamepad1.left_stick_y,
-                                -gamepad1.left_stick_x
-                        ),
-                        -gamepad1.right_stick_x
-                ));
+                // Drive is now field-centric
                 drive.updatePoseEstimate();
+                Pose2d currentPose = drive.localizer.getPose();
+
+                //Joystick input
+                double inputY = -gamepad1.left_stick_y;
+                double inputX = gamepad1.left_stick_x;
+                double inputRx = -gamepad1.right_stick_x;
+
+                double headingRadians = currentPose.heading.toDouble();
+
+                double rotatedX = inputX * Math.cos(-headingRadians) - inputY * Math.sin(-headingRadians);
+                double rotatedY = inputX * Math.sin(-headingRadians) + inputY * Math.cos(-headingRadians);
+
+                drive.setDrivePowers(new PoseVelocity2d(
+                        new Vector2d(rotatedY, -rotatedX),
+                        inputRx
+                ));
+
+                // reset field centric drive
+                if (gamepad1.dpadDownWasPressed()) {
+                    drive.localizer.setPose(new Pose2d(0, 0, 0));
+                }
             }
 
             if (intake != null) intake.updateIntake(gamepad1);
@@ -81,9 +108,30 @@ public class OpMode extends LinearOpMode {
             if (localize != null) localize.update();
 
             if (vision != null) {
-                double tagDistance = vision.getTagDistance(20).ftcPose.range;
-                telemetry.addLine(Double.toString(tagDistance));
+                double distance = vision.getTagDistance(ALLIANCE_TAG_ID) != null
+                        ? vision.getTagDistance(ALLIANCE_TAG_ID).ftcPose.range
+                        : 0.0;
             }
+
+            double distance = 0;
+            if (vision != null) {
+                distance = vision.getTagDistance(Constants.ALLIANCE_TAG_ID) != null
+                        ? vision.getTagDistance(Constants.ALLIANCE_TAG_ID).ftcPose.range
+                        : 0.0;
+            }
+
+            if (distance > 0) {
+                double targetVelocity = ShootingLookupTable.getFlywheelPower(distance);
+                double targetHoodAngle = ShootingLookupTable.getHoodAngle(distance);
+
+                if (flywheel != null) {
+                    flywheel.setShootingPower(targetVelocity);
+                }
+                if (hood != null) {
+                    hood.setHoodAngle(targetHoodAngle);
+                }
+            }
+
         }
 
         telemetry.addLine(imu.getRobotYawPitchRollAngles().toString());
