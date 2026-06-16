@@ -9,37 +9,24 @@ public class ShootingLookupTable {
 
     // Corresponding flywheel power (0.0 - 1.0)
     private static final double[] FLYWHEEL_POWERS = {
-            0.5, 0.6, 0.7, 0.8, 0.9
+            0.7, 0.6, 0.7, 0.78, 0.9
     };
 
     // Corresponding hood angles (degrees, 15-40)
     private static final double[] HOOD_ANGLES = {
-            15, 20, 25, 30, 35
+            15, 20, 25, 32, 40
     };
 
-    /**
-     * Returns the flywheel power (0.0 - 1.0) for a given distance,
-     * interpolating between measured points and extrapolating beyond
-     * the table edges. Result is clamped to 0.0 - 1.0.
-     */
     public static double getFlywheelPower(double distance) {
         double power = lookup(distance, DISTANCES, FLYWHEEL_POWERS);
         return Math.max(0.0, Math.min(1.0, power));
     }
 
-    /**
-     * Returns the hood angle (degrees) for a given distance, interpolating
-     * between measured points and extrapolating beyond the table edges.
-     * Result is clamped to HoodIO's MIN/MAX hood angle.
-     */
     public static double getHoodAngle(double distance) {
         double angle = lookup(distance, DISTANCES, HOOD_ANGLES);
         return Math.max(15.0, Math.min(40.0, angle));
     }
 
-    /**
-     * Piecewise linear interpolation with correct extrapolation.
-     */
     private static double lookup(double x, double[] bounds, double[] values) {
         int n = bounds.length;
 

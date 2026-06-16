@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.DcMotorImplEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.subsystems.Hood.HoodIO;
@@ -23,18 +24,21 @@ import org.firstinspires.ftc.teamcode.subsystems.flywheel.FlywheelIO;
 import org.firstinspires.ftc.teamcode.subsystems.storage.StorageIO;
 import org.firstinspires.ftc.teamcode.subsystems.vision.VisionIO;
 import org.firstinspires.ftc.teamcode.subsystems.vision.VisionLocalize;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 @TeleOp
 public class OpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        DcMotor i = null, st = null;
-        DcMotorEx  s1 = null, s2 = null;
+        DcMotor i = null, st = null, s1 = null, s2 = null;
         Servo h = null;
         WebcamName camera = null;
 
-        try { s1 = hardwareMap.get(DcMotorEx.class, "flywheel1"); } catch (Exception e) { telemetry.addLine("Missing: flywheel1"); }
-        try { s2 = hardwareMap.get(DcMotorImplEx.class, "flywheel2"); } catch (Exception e) {telemetry.addLine("Mising: flywheel2"); }
+        final ElapsedTime timer = new ElapsedTime();
+        boolean wasShootingLastTick = false;
+
+        try { s1 = hardwareMap.dcMotor.get( "flywheel1"); } catch (Exception e) { telemetry.addLine("Missing: flywheel1"); }
+        try { s2 = hardwareMap.dcMotor.get( "flywheel2"); } catch (Exception e) {telemetry.addLine("Mising: flywheel2"); }
         try { st = hardwareMap.dcMotor.get("storage"); } catch (Exception e) { telemetry.addLine("Missing: storage"); }
         try { i = hardwareMap.dcMotor.get("intake"); } catch (Exception e) { telemetry.addLine("Missing: intake"); }
         try { h = hardwareMap.get(Servo.class, "hood"); } catch (Exception e) { telemetry.addLine("Missing: hood"); }
@@ -53,8 +57,8 @@ public class OpMode extends LinearOpMode {
 
         if (s1 != null) s1.setDirection(DcMotorSimple.Direction.FORWARD);
         if (s2 != null) s2.setDirection(DcMotorSimple.Direction.REVERSE);
-        if (st != null) st.setDirection(DcMotorSimple.Direction.REVERSE);
-        if (i != null) i.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (st != null) st.setDirection(DcMotorSimple.Direction.FORWARD);
+        if (i != null) i.setDirection(DcMotorSimple.Direction.FORWARD);
 
 
         MecanumDriveRR drive = new MecanumDriveRR(hardwareMap, new Pose2d(0,0,0));
@@ -84,10 +88,9 @@ public class OpMode extends LinearOpMode {
                 //Joystick input
                 double inputY = -gamepad1.left_stick_y;
                 double inputX = gamepad1.left_stick_x;
-                double inputRx = -gamepad1.right_stick_x;
+                double inputRx = gamepad1.right_stick_x;
 
                 double headingRadians = currentPose.heading.toDouble();
-
                 double rotatedX = inputX * Math.cos(-headingRadians) - inputY * Math.sin(-headingRadians);
                 double rotatedY = inputX * Math.sin(-headingRadians) + inputY * Math.cos(-headingRadians);
 
@@ -107,17 +110,11 @@ public class OpMode extends LinearOpMode {
             if (storage != null) storage.updateStorage(gamepad1);
             if (localize != null) localize.update();
 
-            if (vision != null) {
-                double distance = vision.getTagDistance(ALLIANCE_TAG_ID) != null
-                        ? vision.getTagDistance(ALLIANCE_TAG_ID).ftcPose.range
-                        : 0.0;
-            }
-
+            // Shooting lookup table based on AprilTag distance
             double distance = 0;
             if (vision != null) {
-                distance = vision.getTagDistance(Constants.ALLIANCE_TAG_ID) != null
-                        ? vision.getTagDistance(Constants.ALLIANCE_TAG_ID).ftcPose.range
-                        : 0.0;
+                AprilTagDetection detection = vision.getTagDistance(Constants.ALLIANCE_TAG_ID);
+                distance = (detection != null) ? detection.ftcPose.range : 0.0;
             }
 
             if (distance > 0) {
@@ -132,11 +129,32 @@ public class OpMode extends LinearOpMode {
                 }
             }
 
-        }
+            if (flywheel != null && flywheel.isShooting() && !wasShootingLastTick) {
+                timer.reset();
+            }
+            wasShootingLastTick = flywheel != null && flywheel.isShooting();
 
-        telemetry.addLine(imu.getRobotYawPitchRollAngles().toString());
-        telemetry.update();
+            if (storage != null) {
+                if (flywheel != null && flywheel.isShooting()) {
+                    if (timer.milliseconds() >= 2000) {
+                        storage.setPower(1);
+                    } else {
+                        storage.setPower(0);
+                    }
+                } else if (intake != null && intake.isIntaking()) {
+                    storage.setPower(1);
+                } else {
+                    storage.setPower(0);
+                }
+            }
+
+            telemetry.addLine(imu.getRobotYawPitchRollAngles().toString());
+            telemetry.addLine(Double.toString(distance));
+            telemetry.addLine(Double.toString(ShootingLookupTable.getFlywheelPower(distance)));
+            telemetry.addLine(Double.toString(ShootingLookupTable.getHoodAngle(distance)));
+
+            telemetry.update();
+        }
         if (vision != null) vision.stop();
     }
-
 }

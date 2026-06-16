@@ -40,8 +40,9 @@ public class HoodIO {
 
     //set's position of servo between 0 and 1
     public void setPosition(double position) {
-        double clamped = Math.max(0.0, Math.min(1.0, position));
-       h.setPosition(clamped);
+        double mapped = (position + 1.0) / 2.0; // -1.0 → 0.0, 0.0 → 0.5, 1.0 → 1.0
+        double clamped = Math.max(0.0, Math.min(1.0, mapped));
+        h.setPosition(clamped);
     }
 
     public double getPosition() {
