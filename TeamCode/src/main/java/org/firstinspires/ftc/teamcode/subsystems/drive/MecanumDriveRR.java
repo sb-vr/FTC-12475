@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.subsystems.drive;
 
-import java.lang.Math;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,7 +61,7 @@ public final class MecanumDriveRR {
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
 
         // drive model parameters
-        public double inPerTick = (Math.PI * (32.0 / 25.4)) / 2000;
+        public double inPerTick = (java.lang.Math.PI * (32.0 / 25.4)) / 2000;
         public double lateralInPerTick = 0.0012495431986690628;
         public double trackWidthTicks = 5388.626357451902;
 
@@ -77,8 +76,8 @@ public final class MecanumDriveRR {
         public double maxProfileAccel = 50;
 
         // turn profile parameters (in radians)
-        public double maxAngVel = Math.PI; // shared with path
-        public double maxAngAccel = Math.PI;
+        public double maxAngVel = java.lang.Math.PI; // shared with path
+        public double maxAngAccel = java.lang.Math.PI;
 
         // path controller gains
         public double axialGain = 2;
@@ -239,7 +238,7 @@ public final class MecanumDriveRR {
 
         double maxPowerMag = 1;
         for (DualNum<Time> power : wheelVels.all()) {
-            maxPowerMag = Math.max(maxPowerMag, power.value());
+            maxPowerMag = java.lang.Math.max(maxPowerMag, power.value());
         }
 
         leftFront.setPower(wheelVels.leftFront.get(0) / maxPowerMag);
@@ -258,7 +257,7 @@ public final class MecanumDriveRR {
             timeTrajectory = t;
 
             List<Double> disps = com.acmerobotics.roadrunner.Math.range(
-                    0, t.path.length(), Math.max(2, (int) Math.ceil(t.path.length() / 2)));
+                    0, t.path.length(), java.lang.Math.max(2, (int) java.lang.Math.ceil(t.path.length() / 2)));
             xPoints = new double[disps.size()];
             yPoints = new double[disps.size()];
             for (int i = 0; i < disps.size(); i++) {
@@ -316,12 +315,12 @@ public final class MecanumDriveRR {
 
             p.put("x", localizer.getPose().position.x);
             p.put("y", localizer.getPose().position.y);
-            p.put("heading (deg)", Math.toDegrees(localizer.getPose().heading.toDouble()));
+            p.put("heading (deg)", java.lang.Math.toDegrees(localizer.getPose().heading.toDouble()));
 
             Pose2d error = txWorldTarget.value().minusExp(localizer.getPose());
             p.put("xError", error.position.x);
             p.put("yError", error.position.y);
-            p.put("headingError (deg)", Math.toDegrees(error.heading.toDouble()));
+            p.put("headingError (deg)", java.lang.Math.toDegrees(error.heading.toDouble()));
 
             // only draw when active; only one drive action should be active at a time
             Canvas c = p.fieldOverlay();
