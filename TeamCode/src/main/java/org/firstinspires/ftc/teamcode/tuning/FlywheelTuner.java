@@ -1,6 +1,11 @@
 package org.firstinspires.ftc.teamcode.tuning;
 
 
+import static org.firstinspires.ftc.teamcode.subsystems.constants.FlywheelConstants.D;
+import static org.firstinspires.ftc.teamcode.subsystems.constants.FlywheelConstants.F;
+import static org.firstinspires.ftc.teamcode.subsystems.constants.FlywheelConstants.I;
+import static org.firstinspires.ftc.teamcode.subsystems.constants.FlywheelConstants.P;
+
 import org.firstinspires.ftc.teamcode.subsystems.flywheel.FlywheelIO;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -15,7 +20,6 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 public class FlywheelTuner extends LinearOpMode {
     @Override
     public void runOpMode() {
-        // Replace normal telemetry with Dashboard telemetry
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         DcMotorEx s1 = hardwareMap.get(DcMotorEx.class, "flywheel1");
@@ -23,12 +27,12 @@ public class FlywheelTuner extends LinearOpMode {
 
         waitForStart();
         while (opModeIsActive()) {
-            s1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(FlywheelIO.P, FlywheelIO.I, FlywheelIO.D, FlywheelIO.F));
-            s1.setVelocity(FlywheelIO.TARGET_VELOCITY);
+            s1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(P, I, D, F));
+            s1.setVelocity(500.0);
 
-            telemetry.addData("Target velocity", FlywheelIO.TARGET_VELOCITY);
+            telemetry.addData("Target velocity", 500.0);
             telemetry.addData("Current velocity", s1.getVelocity());
-            telemetry.addData("Error", FlywheelIO.TARGET_VELOCITY - s1.getVelocity());
+            telemetry.addData("Error", 500.0 - s1.getVelocity());
             telemetry.update();
         }
     }

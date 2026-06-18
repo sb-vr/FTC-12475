@@ -32,28 +32,4 @@ public class VisionLocalize {
     public Pose3D getLastPose() {
         return lastPose;
     }
-
-    public double getX(DistanceUnit unit) {
-        return (lastPose != null) ? lastPose.getPosition().x : Double.NaN;
-    }
-
-    public double getY(DistanceUnit unit) {
-        return (lastPose != null) ? lastPose.getPosition().y : Double.NaN;
-    }
-
-    public double getZ(DistanceUnit unit) {
-        return (lastPose != null) ? lastPose.getPosition().z : Double.NaN;
-    }
-
-    public double getYaw(AngleUnit unit) {
-        return (lastPose != null) ? lastPose.getOrientation().getYaw(unit) : Double.NaN;
-    }
-
-    public double getPitch(AngleUnit unit) {
-        return (lastPose != null) ? lastPose.getOrientation().getPitch(unit) : Double.NaN;
-    }
-
-    public double getRoll(AngleUnit unit) {
-        return (lastPose != null) ? lastPose.getOrientation().getRoll(unit) : Double.NaN;
-    }
 }

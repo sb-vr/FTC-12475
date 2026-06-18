@@ -1,19 +1,15 @@
 package org.firstinspires.ftc.teamcode.subsystems.hood;
 
+import static org.firstinspires.ftc.teamcode.subsystems.constants.HoodConstants.BASE_SERVO_OFFSET_DEGREES;
+import static org.firstinspires.ftc.teamcode.subsystems.constants.HoodConstants.GEAR_RATIO;
+import static org.firstinspires.ftc.teamcode.subsystems.constants.HoodConstants.MAX_HOOD_ANGLE;
+import static org.firstinspires.ftc.teamcode.subsystems.constants.HoodConstants.MIN_HOOD_ANGLE;
+import static org.firstinspires.ftc.teamcode.subsystems.constants.HoodConstants.SERVO_RANGE_DEGREES;
+
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class HoodIO {
     private final Servo h;
-
-    private static final double GEAR_RATIO = 180.0 / 18.0; // = 10
-
-    // Hood angle limits (degrees)
-    public static double MIN_HOOD_ANGLE = 0.0;
-    public static double MAX_HOOD_ANGLE = 60.0;
-
-    private static final double SERVO_RANGE_DEGREES = 300.0;
-
-    private static final double BASE_SERVO_OFFSET_DEGREES = MIN_HOOD_ANGLE * GEAR_RATIO;
 
     //ToDo get the mounting offset later before testing
     public static double MOUNTING_OFFSET_DEGREES = 0.0;

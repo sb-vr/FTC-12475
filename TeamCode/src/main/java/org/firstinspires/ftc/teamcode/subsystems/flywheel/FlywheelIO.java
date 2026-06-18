@@ -1,5 +1,10 @@
 package org.firstinspires.ftc.teamcode.subsystems.flywheel;
 
+import static org.firstinspires.ftc.teamcode.subsystems.constants.FlywheelConstants.D;
+import static org.firstinspires.ftc.teamcode.subsystems.constants.FlywheelConstants.F;
+import static org.firstinspires.ftc.teamcode.subsystems.constants.FlywheelConstants.I;
+import static org.firstinspires.ftc.teamcode.subsystems.constants.FlywheelConstants.P;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -12,12 +17,6 @@ public class FlywheelIO {
     private final DcMotor s2;
     private boolean shooting = false;
     private double shootingVelocity = 0.0;
-
-    public static double TARGET_VELOCITY = 500.0;
-    public static double F = 14.25025;
-    public static double P = 120.0;
-    public static double I = 0.0;
-    public static double D = 10.0;
 
     public FlywheelIO(DcMotorEx s1, DcMotor s2) {
         this.s1 = s1;
