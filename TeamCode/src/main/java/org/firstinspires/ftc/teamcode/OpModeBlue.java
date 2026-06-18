@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -15,6 +16,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.roadrunnerMeuk.PinpointLocalizer;
 import org.firstinspires.ftc.teamcode.subsystems.Hood.HoodIO;
 import org.firstinspires.ftc.teamcode.subsystems.ballstopper.BallstopperIO;
@@ -29,8 +31,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 @TeleOp
 public class OpModeBlue extends LinearOpMode {
     private boolean isAligning = false;
-    private final double Kp = 0.04;
-    private final double TOLERANCE_DEGREES = 30;
+    private final double Kp = -0.02;
+    private final double TOLERANCE_DEGREES = 2;
 
     // Red Goal is in de rechterbovenhoek
     private final double GOAL_X = 0.0;
@@ -119,64 +121,75 @@ public class OpModeBlue extends LinearOpMode {
 
             isAligning = gamepad1.x && (currentPosition != null);
             if (drive != null) {
-                if (isAligning) {
-                    double currentX = localize.getX(DistanceUnit.INCH);
-                    double currentY = localize.getY(DistanceUnit.INCH);
+                if (true) {
+//                    double currentX = localize.getX(DistanceUnit.INCH);
+//                    double currentY = localize.getY(DistanceUnit.INCH);
+                    double currentX = -currentPinpointPose.position.x;
+                    double currentY = -currentPinpointPose.position.y;
+
+//                    System.out.println("pinpointX"+currentX);
+//                    System.out.println("pinpointY"+currentY);
 
                     double deltaX = GOAL_X - currentX;
                     double deltaY = GOAL_Y - currentY;
 
-                    double targetHeading = Math.toDegrees(Math.atan2(deltaX, deltaY));
+                    System.out.println("DeltaX"+deltaX);
+                    System.out.println("DeltaY"+deltaY);
 
+                    double targetHeading = Math.toDegrees(Math.atan2(deltaY, deltaX));
                     double normalizedHeadingInDeg = headingDegrees;
                     while (normalizedHeadingInDeg > 180)  normalizedHeadingInDeg -= 360;
                     while (normalizedHeadingInDeg <= -180) normalizedHeadingInDeg += 360;
 
+                    System.out.println("normalizedHeading"+normalizedHeadingInDeg);
+                    System.out.println("headings"+headingDegrees);
+                    System.out.println("targetHeading"+targetHeading);
+
                     double error = targetHeading - normalizedHeadingInDeg;
                     while (error > 180)  error -= 360;
                     while (error <= -180) error += 360;
+                    System.out.println("error"+error);
 
-                    telemetry.addData("targetHeading: ", Double.toString( headingDegrees) );
-
-                    if (Math.abs(error) < TOLERANCE_DEGREES) {
-                        drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
-                    } else {
+//                    if (Math.abs(error) < TOLERANCE_DEGREES) {
+//                        System
+//                        drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
+//                    } else {
                         double turnPower = error * Kp;
                         double maxTurnPower = 0.4;
                         turnPower = Math.max(-maxTurnPower, Math.min(maxTurnPower, turnPower));
 
-                        if (Math.abs(turnPower) < 0.05) {
-                            turnPower = Math.signum(turnPower) * 0.05;
-                        }
+//                        if (Math.abs(turnPower) < 0.05) {
+//                            turnPower = Math.signum(turnPower) * 0.05;
+//                        }
                         drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), turnPower));
-                    }
-                } else {
-                    // Drive is now field-centric
-                    drive.updatePoseEstimate();
-                    Pose2d currentPose = drive.localizer.getPose();
 
-                    //Joystick input
-                    double inputY = -gamepad1.left_stick_y;
-                    double inputX = gamepad1.left_stick_x;
-                    double inputRx = gamepad1.right_stick_x;
-
-                    inputY = -inputY;
-
-                    double headingRadians = currentPose.heading.toDouble();
-                    double rotatedX = inputX * Math.cos(headingRadians) - inputY * Math.sin(headingRadians);
-                    double rotatedY = inputX * Math.sin(headingRadians) + inputY * Math.cos(headingRadians);
-
-                    drive.setDrivePowers(new PoseVelocity2d(
-                            new Vector2d(rotatedY, rotatedX),
-                            inputRx
-                    ));
+//                } else {
+//                    // Drive is now field-centric
+//                    drive.updatePoseEstimate();
+//                    Pose2d currentPose = drive.localizer.getPose();
+//
+//                    //Joystick input
+//                    double inputY = -gamepad1.left_stick_y;
+//                    double inputX = gamepad1.left_stick_x;
+//                    double inputRx = gamepad1.right_stick_x;
+//
+//                    inputY = -inputY;
+//
+//                    double headingRadians = currentPose.heading.toDouble();
+//                    double rotatedX = inputX * Math.cos(headingRadians) - inputY * Math.sin(headingRadians);
+//                    double rotatedY = inputX * Math.sin(headingRadians) + inputY * Math.cos(headingRadians);
+//
+//                    drive.setDrivePowers(new PoseVelocity2d(
+//                            new Vector2d(rotatedY, rotatedX),
+//                            inputRx
+//                    ));
 
                     // reset field centric drive
                     if (gamepad1.dpadDownWasPressed()) {
                         pinpointLocalizer.setPose(new Pose2d(0, 0, 0));
                     }
                 }
-            }
+
 
             if (intake != null) intake.updateIntake(gamepad1);
             if (flywheel!= null) flywheel.updateShooter(gamepad1);
@@ -220,6 +233,14 @@ public class OpModeBlue extends LinearOpMode {
                 }
             }
 
+            telemetry.addData("targetHeading: ", Double.toString( headingDegrees) );
+            telemetry.addData("targetHeading: ", currentPinpointPose.heading);
+            telemetry.addData("pinpoint: ", pinpointLocalizer.getPose().heading);
+            telemetry.addData("pinpointX", currentPinpointPose.position.x);
+            telemetry.addData("pinpointY", currentPinpointPose.position.y);
+
+
+
             telemetry.addLine(Double.toString(distance));
             if (ballstopper != null) {
                 telemetry.addLine(Double.toString(ballstopper.getPosition()));
@@ -231,4 +252,4 @@ public class OpModeBlue extends LinearOpMode {
         }
         if (vision != null) vision.stop();
     }
-}
+}}

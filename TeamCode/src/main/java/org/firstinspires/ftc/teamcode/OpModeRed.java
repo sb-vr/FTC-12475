@@ -123,8 +123,10 @@ public class OpModeRed extends LinearOpMode {
 
             if (drive != null) {
                 if (isAligning) {
-                    double currentX = localize.getX(DistanceUnit.INCH);
-                    double currentY = localize.getY(DistanceUnit.INCH);
+//                    double currentX = localize.getX(DistanceUnit.INCH);
+//                    double currentY = localize.getY(DistanceUnit.INCH);
+                    double currentX = currentPinpointPose.position.x;
+                    double currentY = currentPinpointPose.position.y;
 
                     double deltaX = GOAL_X - currentX;
                     double deltaY = GOAL_Y - currentY;
