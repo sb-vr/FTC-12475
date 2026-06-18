@@ -2,24 +2,22 @@ package org.firstinspires.ftc.teamcode;
 
 public class ShootingLookupTable {
 
-    // Measured distances (inches) - must be sorted ascending
     private static final double[] DISTANCES = {
-            24, 36, 48, 60, 72
+            10, 36, 48, 60, 72, 84, 96, 110
     };
 
-    // Corresponding flywheel power (0.0 - 1.0)
-    private static final double[] FLYWHEEL_POWERS = {
-            0.7, 0.6, 0.7, 0.78, 0.9
+    // RPM omgezet naar ticks per seconde (28 ticks/rev)
+    // rpm / 60 * 28
+    private static final double[] FLYWHEEL_VELOCITIES = {
+            1400, 1500, 1620, 1710, 1840, 1950, 2040, 2100
     };
 
-    // Corresponding hood angles (degrees, 15-40)
     private static final double[] HOOD_ANGLES = {
-            15, 20, 25, 32, 40
+            15, 18, 20, 29, 32, 35, 38, 40
     };
 
-    public static double getFlywheelPower(double distance) {
-        double power = lookup(distance, DISTANCES, FLYWHEEL_POWERS);
-        return Math.max(0.0, Math.min(1.0, power));
+    public static double getFlywheelVelocity(double distance) {
+        return lookup(distance, DISTANCES, FLYWHEEL_VELOCITIES);
     }
 
     public static double getHoodAngle(double distance) {

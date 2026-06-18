@@ -28,12 +28,12 @@ import org.firstinspires.ftc.teamcode.roadrunnerMeuk.messages.TwoDeadWheelInputs
 public final class TwoDeadWheelLocalizer implements Localizer {
     public static class Params {
         // Parallel encoder offsets from robot center
-        public double parXTicks = -3.2/(Math.PI*1.26) * 8192;
-        public double parYTicks = -7.677/(Math.PI*1.26) * 8192;
+        public double parXTicks = 4.5/(Math.PI*1.26) * 8192;
+        public double parYTicks = 2.44/(Math.PI*1.26) * 8192;
 
         // Perpendicular encoder offsets from robot center
-        public double perpXTicks = 3.2/(Math.PI*1.26) * 8192;
-        public double perpYTicks = -7.677/(Math.PI*1.26) * 8192;
+        public double perpXTicks = -4.5/(Math.PI*1.26) * 8192;
+        public double perpYTicks = 2.44/(Math.PI*1.26) * 8192;
     }
 
     public static Params PARAMS = new Params();

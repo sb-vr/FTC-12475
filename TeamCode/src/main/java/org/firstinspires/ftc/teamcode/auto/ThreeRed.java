@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.drive.MecanumDriveRR;
 import org.firstinspires.ftc.teamcode.tuning.TuningOpModes;
 
-@Autonomous(name = "3x red")
+//@Autonomous(name = "3x red")
 public final class ThreeRed extends LinearOpMode {
 
     @Override

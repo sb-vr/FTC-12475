@@ -15,7 +15,7 @@ public class StorageIO {
 
     public void updateStorage(Gamepad gamepad1) {
         if (gamepad1.a) {
-            targetPower = 0.8;
+            targetPower = 0.05;
         } else if (gamepad1.y) {
             targetPower = -1;
         } else {
