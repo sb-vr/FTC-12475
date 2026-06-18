@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.auto;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.Constants;
 import org.firstinspires.ftc.teamcode.ShootingLookupTable;
-import org.firstinspires.ftc.teamcode.subsystems.Hood.HoodIO;
+import org.firstinspires.ftc.teamcode.subsystems.hood.HoodIO;
 import org.firstinspires.ftc.teamcode.subsystems.drive.MecanumDriveRR;
 import org.firstinspires.ftc.teamcode.subsystems.flywheel.FlywheelIO;
 import org.firstinspires.ftc.teamcode.subsystems.vision.VisionIO;
