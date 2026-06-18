@@ -1,9 +1,25 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.Constants.BLUE_GOAL_X;
+import static org.firstinspires.ftc.teamcode.Constants.BLUE_GOAL_Y;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.Constants.*;
+import org.firstinspires.ftc.teamcode.roadrunnerMeuk.PinpointLocalizer;
+import org.firstinspires.ftc.teamcode.subsystems.Hood.HoodIO;
+import org.firstinspires.ftc.teamcode.subsystems.ballstopper.BallstopperIO;
+import org.firstinspires.ftc.teamcode.subsystems.drive.MecanumDriveRR;
+import org.firstinspires.ftc.teamcode.subsystems.flywheel.FlywheelIO;
+import org.firstinspires.ftc.teamcode.subsystems.intake.IntakeIO;
+import org.firstinspires.ftc.teamcode.subsystems.storage.StorageIO;
+import org.firstinspires.ftc.teamcode.subsystems.vision.VisionIO;
+import org.firstinspires.ftc.teamcode.subsystems.vision.VisionLocalize;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -12,22 +28,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
-import org.firstinspires.ftc.teamcode.roadrunnerMeuk.PinpointLocalizer;
-import org.firstinspires.ftc.teamcode.subsystems.Hood.HoodIO;
-import org.firstinspires.ftc.teamcode.subsystems.ballstopper.BallstopperIO;
-import org.firstinspires.ftc.teamcode.subsystems.drive.MecanumDriveRR;
-import org.firstinspires.ftc.teamcode.subsystems.intake.IntakeIO;
-import org.firstinspires.ftc.teamcode.subsystems.flywheel.FlywheelIO;
-import org.firstinspires.ftc.teamcode.subsystems.storage.StorageIO;
-import org.firstinspires.ftc.teamcode.subsystems.vision.VisionIO;
-import org.firstinspires.ftc.teamcode.subsystems.vision.VisionLocalize;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-
 @TeleOp
 public class OpModeBlue extends LinearOpMode {
     private boolean isAligning = false;
@@ -35,8 +35,7 @@ public class OpModeBlue extends LinearOpMode {
     private final double TOLERANCE_DEGREES = 2;
 
     // Red Goal is in de rechterbovenhoek
-    private final double GOAL_X = 0.0;
-    private final double GOAL_Y = 144.0;
+
     @Override
     public void runOpMode() throws InterruptedException {
         DcMotor i = null, st = null, s2 = null;
@@ -48,15 +47,47 @@ public class OpModeBlue extends LinearOpMode {
         final ElapsedTime timer = new ElapsedTime();
         boolean wasShootingLastTick = false;
 
-        try { s1 = hardwareMap.get(DcMotorEx.class, "flywheel1"); } catch (Exception e) { telemetry.addLine("Missing: flywheel1"); }
-        try { s2 = hardwareMap.dcMotor.get( "flywheel2"); } catch (Exception e) {telemetry.addLine("Mising: flywheel2"); }
-        try { st = hardwareMap.dcMotor.get("storage"); } catch (Exception e) { telemetry.addLine("Missing: storage"); }
-        try { i = hardwareMap.dcMotor.get("intake"); } catch (Exception e) { telemetry.addLine("Missing: intake"); }
-        try { h = hardwareMap.get(Servo.class, "hood"); } catch (Exception e) { telemetry.addLine("Missing: hood"); }
-        try { beunServo = hardwareMap.get(Servo.class, "ballstopper"); } catch (Exception e) {telemetry.addLine("Missing: ballstopper"); }
-        try { pinpointLocalizer = new PinpointLocalizer(hardwareMap, 0.001978956, new Pose2d(0, 0, 0));} catch (Exception e) {telemetry.addLine("Missing: PinpointLocalizer initialisatie mislukt!"); }
+        try {
+            s1 = hardwareMap.get(DcMotorEx.class, "flywheel1");
+        } catch (Exception e) {
+            telemetry.addLine("Missing: flywheel1");
+        }
+        try {
+            s2 = hardwareMap.dcMotor.get("flywheel2");
+        } catch (Exception e) {
+            telemetry.addLine("Mising: flywheel2");
+        }
+        try {
+            st = hardwareMap.dcMotor.get("storage");
+        } catch (Exception e) {
+            telemetry.addLine("Missing: storage");
+        }
+        try {
+            i = hardwareMap.dcMotor.get("intake");
+        } catch (Exception e) {
+            telemetry.addLine("Missing: intake");
+        }
+        try {
+            h = hardwareMap.get(Servo.class, "hood");
+        } catch (Exception e) {
+            telemetry.addLine("Missing: hood");
+        }
+        try {
+            beunServo = hardwareMap.get(Servo.class, "ballstopper");
+        } catch (Exception e) {
+            telemetry.addLine("Missing: ballstopper");
+        }
+        try {
+            pinpointLocalizer = new PinpointLocalizer(hardwareMap, 0.001978956, new Pose2d(0, 0, 0));
+        } catch (Exception e) {
+            telemetry.addLine("Missing: PinpointLocalizer initialisatie mislukt!");
+        }
 
-        try { camera = hardwareMap.get(WebcamName.class, "Webcam 1"); } catch (Exception e) { telemetry.addLine("Missing: Webcam 1"); }
+        try {
+            camera = hardwareMap.get(WebcamName.class, "Webcam 1");
+        } catch (Exception e) {
+            telemetry.addLine("Missing: Webcam 1");
+        }
 
         telemetry.update();
 
@@ -68,9 +99,9 @@ public class OpModeBlue extends LinearOpMode {
         if (st != null) st.setDirection(DcMotorSimple.Direction.FORWARD);
         if (i != null) i.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        MecanumDriveRR drive = new MecanumDriveRR(hardwareMap, new Pose2d(0,0,0));
+        MecanumDriveRR drive = new MecanumDriveRR(hardwareMap, new Pose2d(0, 0, 0));
 
-        FlywheelIO flywheel= (s1 != null && s2 != null) ? new FlywheelIO(s1, s2) : null;
+        FlywheelIO flywheel = (s1 != null && s2 != null) ? new FlywheelIO(s1, s2) : null;
 
         BallstopperIO ballstopper = (beunServo != null) ? new BallstopperIO(beunServo) : null;
 
@@ -130,38 +161,38 @@ public class OpModeBlue extends LinearOpMode {
 //                    System.out.println("pinpointX"+currentX);
 //                    System.out.println("pinpointY"+currentY);
 
-                    double deltaX = GOAL_X - currentX;
-                    double deltaY = GOAL_Y - currentY;
+                    double deltaX = BLUE_GOAL_X - currentX;
+                    double deltaY = BLUE_GOAL_Y - currentY;
 
-                    System.out.println("DeltaX"+deltaX);
-                    System.out.println("DeltaY"+deltaY);
+                    System.out.println("DeltaX" + deltaX);
+                    System.out.println("DeltaY" + deltaY);
 
                     double targetHeading = Math.toDegrees(Math.atan2(deltaY, deltaX));
                     double normalizedHeadingInDeg = headingDegrees;
-                    while (normalizedHeadingInDeg > 180)  normalizedHeadingInDeg -= 360;
+                    while (normalizedHeadingInDeg > 180) normalizedHeadingInDeg -= 360;
                     while (normalizedHeadingInDeg <= -180) normalizedHeadingInDeg += 360;
 
-                    System.out.println("normalizedHeading"+normalizedHeadingInDeg);
-                    System.out.println("headings"+headingDegrees);
-                    System.out.println("targetHeading"+targetHeading);
+                    System.out.println("normalizedHeading" + normalizedHeadingInDeg);
+                    System.out.println("headings" + headingDegrees);
+                    System.out.println("targetHeading" + targetHeading);
 
                     double error = targetHeading - normalizedHeadingInDeg;
-                    while (error > 180)  error -= 360;
+                    while (error > 180) error -= 360;
                     while (error <= -180) error += 360;
-                    System.out.println("error"+error);
+                    System.out.println("error" + error);
 
 //                    if (Math.abs(error) < TOLERANCE_DEGREES) {
 //                        System
 //                        drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
 //                    } else {
-                        double turnPower = error * Kp;
-                        double maxTurnPower = 0.4;
-                        turnPower = Math.max(-maxTurnPower, Math.min(maxTurnPower, turnPower));
+                    double turnPower = error * Kp;
+                    double maxTurnPower = 0.4;
+                    turnPower = Math.max(-maxTurnPower, Math.min(maxTurnPower, turnPower));
 
 //                        if (Math.abs(turnPower) < 0.05) {
 //                            turnPower = Math.signum(turnPower) * 0.05;
 //                        }
-                        drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), turnPower));
+                    drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), turnPower));
 
 //                } else {
 //                    // Drive is now field-centric
@@ -191,65 +222,67 @@ public class OpModeBlue extends LinearOpMode {
                 }
 
 
-            if (intake != null) intake.updateIntake(gamepad1);
-            if (flywheel!= null) flywheel.updateShooter(gamepad1);
-            if (storage != null) storage.updateStorage(gamepad1);
-            // Shooting lookup table based on AprilTag distance
+                if (intake != null) intake.updateIntake(gamepad1);
+                if (flywheel != null) flywheel.updateShooter(gamepad1);
+                if (storage != null) storage.updateStorage(gamepad1);
+                // Shooting lookup table based on AprilTag distance
 
-            if (distance > 0) {
-                double targetVelocity = ShootingLookupTable.getFlywheelVelocity(distance);
-                telemetry.addLine("Target velocity: " + targetVelocity);
-                double targetHoodAngle = ShootingLookupTable.getHoodAngle(distance);
+                if (distance > 0) {
+                    double targetVelocity = ShootingLookupTable.getFlywheelVelocity(distance);
+                    telemetry.addLine("Target velocity: " + targetVelocity);
+                    double targetHoodAngle = ShootingLookupTable.getHoodAngle(distance);
 
-                if (flywheel != null) {
-                    flywheel.setShootingVelocity(targetVelocity);
-                }
-                if (hood != null) {
-                    hood.setHoodAngle(targetHoodAngle);
-                }
-            }
-
-            if (flywheel != null && flywheel.isShooting() && !wasShootingLastTick) {
-                timer.reset();
-            }
-            wasShootingLastTick = flywheel != null && flywheel.isShooting();
-
-            //ToDo check which angle the servo has to go to!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            if (storage != null) {
-                if (flywheel != null && flywheel.isShooting()) {
-                    if (beunServo != null) {
-                        beunServo.setPosition(0.45);
+                    if (flywheel != null) {
+                        flywheel.setShootingVelocity(targetVelocity);
                     }
-                    if (timer.milliseconds() >= 2000) {
+                    if (hood != null) {
+                        hood.setHoodAngle(targetHoodAngle);
+                    }
+                }
+
+                if (flywheel != null && flywheel.isShooting() && !wasShootingLastTick) {
+                    timer.reset();
+                }
+                wasShootingLastTick = flywheel != null && flywheel.isShooting();
+
+                //ToDo check which angle the servo has to go to!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                if (storage != null) {
+                    if (flywheel != null && flywheel.isShooting()) {
+                        if (beunServo != null) {
+                            beunServo.setPosition(0.45);
+                        }
+                        if (timer.milliseconds() >= 2000) {
+                            storage.setPower(0.8);
+                        } else {
+                            storage.setPower(0);
+                        }
+                    } else if (intake != null && intake.isIntaking()) {
+                        if (beunServo != null) {
+                            beunServo.setPosition(1);
+                        }
                         storage.setPower(0.8);
                     } else {
                         storage.setPower(0);
                     }
-                } else if (intake != null && intake.isIntaking()) {
-                    if (beunServo != null) {beunServo.setPosition(1);}
-                    storage.setPower(0.8);
-                } else {
-                    storage.setPower(0);
                 }
+
+                telemetry.addData("targetHeading: ", Double.toString(headingDegrees));
+                telemetry.addData("targetHeading: ", currentPinpointPose.heading);
+                telemetry.addData("pinpoint: ", pinpointLocalizer.getPose().heading);
+                telemetry.addData("pinpointX", currentPinpointPose.position.x);
+                telemetry.addData("pinpointY", currentPinpointPose.position.y);
+
+
+                telemetry.addLine(Double.toString(distance));
+                if (ballstopper != null) {
+                    telemetry.addLine(Double.toString(ballstopper.getPosition()));
+                }
+                telemetry.addLine(Double.toString(ShootingLookupTable.getFlywheelVelocity(distance)));
+                telemetry.addLine(Double.toString(ShootingLookupTable.getHoodAngle(distance)));
+
+                telemetry.update();
             }
-
-            telemetry.addData("targetHeading: ", Double.toString( headingDegrees) );
-            telemetry.addData("targetHeading: ", currentPinpointPose.heading);
-            telemetry.addData("pinpoint: ", pinpointLocalizer.getPose().heading);
-            telemetry.addData("pinpointX", currentPinpointPose.position.x);
-            telemetry.addData("pinpointY", currentPinpointPose.position.y);
-
-
-
-            telemetry.addLine(Double.toString(distance));
-            if (ballstopper != null) {
-                telemetry.addLine(Double.toString(ballstopper.getPosition()));
-            }
-            telemetry.addLine(Double.toString(ShootingLookupTable.getFlywheelVelocity(distance)));
-            telemetry.addLine(Double.toString(ShootingLookupTable.getHoodAngle(distance)));
-
-            telemetry.update();
+            if (vision != null) vision.stop();
         }
-        if (vision != null) vision.stop();
     }
-}}
+}

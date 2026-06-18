@@ -1,21 +1,11 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.PoseVelocity2d;
-import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
+import static org.firstinspires.ftc.teamcode.Constants.RED_GOAL_X;
+import static org.firstinspires.ftc.teamcode.Constants.RED_GOAL_Y;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.Constants.*;
 import org.firstinspires.ftc.teamcode.roadrunnerMeuk.PinpointLocalizer;
 import org.firstinspires.ftc.teamcode.subsystems.Hood.HoodIO;
 import org.firstinspires.ftc.teamcode.subsystems.ballstopper.BallstopperIO;
@@ -27,15 +17,23 @@ import org.firstinspires.ftc.teamcode.subsystems.vision.VisionIO;
 import org.firstinspires.ftc.teamcode.subsystems.vision.VisionLocalize;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 @TeleOp
 public class OpModeRed extends LinearOpMode {
 
     private boolean isAligning = false;
     private final double Kp = 0.04; // Begin hiermee, verhoog naar 0.05 of 0.06 als hij te traag is
     private final double TOLERANCE_DEGREES = 1.0;
-
-    private final double GOAL_X = 144.0;
-    private final double GOAL_Y = 144.0;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -48,14 +46,46 @@ public class OpModeRed extends LinearOpMode {
         final ElapsedTime timer = new ElapsedTime();
         boolean wasShootingLastTick = false;
 
-        try { s1 = hardwareMap.get(DcMotorEx.class, "flywheel1"); } catch (Exception e) { telemetry.addLine("Missing: flywheel1"); }
-        try { s2 = hardwareMap.dcMotor.get( "flywheel2"); } catch (Exception e) {telemetry.addLine("Mising: flywheel2"); }
-        try { st = hardwareMap.dcMotor.get("storage"); } catch (Exception e) { telemetry.addLine("Missing: storage"); }
-        try { i = hardwareMap.dcMotor.get("intake"); } catch (Exception e) { telemetry.addLine("Missing: intake"); }
-        try { h = hardwareMap.get(Servo.class, "hood"); } catch (Exception e) { telemetry.addLine("Missing: hood"); }
-        try { beunServo = hardwareMap.get(Servo.class, "ballstopper"); } catch (Exception e) {telemetry.addLine("Missing: ballstopper"); }
-        try { pinpointLocalizer = new PinpointLocalizer(hardwareMap, 0.001978956, new Pose2d(0, 0, 0));} catch (Exception e) {telemetry.addLine("Missing: PinpointLocalizer initialisatie mislukt!"); }
-        try { camera = hardwareMap.get(WebcamName.class, "Webcam 1"); } catch (Exception e) { telemetry.addLine("Missing: Webcam 1"); }
+        try {
+            s1 = hardwareMap.get(DcMotorEx.class, "flywheel1");
+        } catch (Exception e) {
+            telemetry.addLine("Missing: flywheel1");
+        }
+        try {
+            s2 = hardwareMap.dcMotor.get("flywheel2");
+        } catch (Exception e) {
+            telemetry.addLine("Mising: flywheel2");
+        }
+        try {
+            st = hardwareMap.dcMotor.get("storage");
+        } catch (Exception e) {
+            telemetry.addLine("Missing: storage");
+        }
+        try {
+            i = hardwareMap.dcMotor.get("intake");
+        } catch (Exception e) {
+            telemetry.addLine("Missing: intake");
+        }
+        try {
+            h = hardwareMap.get(Servo.class, "hood");
+        } catch (Exception e) {
+            telemetry.addLine("Missing: hood");
+        }
+        try {
+            beunServo = hardwareMap.get(Servo.class, "ballstopper");
+        } catch (Exception e) {
+            telemetry.addLine("Missing: ballstopper");
+        }
+        try {
+            pinpointLocalizer = new PinpointLocalizer(hardwareMap, 0.001978956, new Pose2d(0, 0, 0));
+        } catch (Exception e) {
+            telemetry.addLine("Missing: PinpointLocalizer initialisatie mislukt!");
+        }
+        try {
+            camera = hardwareMap.get(WebcamName.class, "Webcam 1");
+        } catch (Exception e) {
+            telemetry.addLine("Missing: Webcam 1");
+        }
 
         telemetry.update();
 
@@ -67,9 +97,9 @@ public class OpModeRed extends LinearOpMode {
         if (st != null) st.setDirection(DcMotorSimple.Direction.FORWARD);
         if (i != null) i.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        MecanumDriveRR drive = new MecanumDriveRR(hardwareMap, new Pose2d(0,0,0));
+        MecanumDriveRR drive = new MecanumDriveRR(hardwareMap, new Pose2d(0, 0, 0));
 
-        FlywheelIO flywheel= (s1 != null && s2 != null) ? new FlywheelIO(s1, s2) : null;
+        FlywheelIO flywheel = (s1 != null && s2 != null) ? new FlywheelIO(s1, s2) : null;
 
         BallstopperIO ballstopper = (beunServo != null) ? new BallstopperIO(beunServo) : null;
 
@@ -111,7 +141,7 @@ public class OpModeRed extends LinearOpMode {
             double headingInDeg = Math.toDegrees(headingInRad);
 
             if (gamepad1.dpadUpWasPressed()) {
-                 drive = new MecanumDriveRR(hardwareMap, new Pose2d(9,6.3,180));
+                drive = new MecanumDriveRR(hardwareMap, new Pose2d(9, 6.3, 180));
             }
 
             Pose3D currentPosition = null;
@@ -128,17 +158,17 @@ public class OpModeRed extends LinearOpMode {
                     double currentX = currentPinpointPose.position.x;
                     double currentY = currentPinpointPose.position.y;
 
-                    double deltaX = GOAL_X - currentX;
-                    double deltaY = GOAL_Y - currentY;
+                    double deltaX = RED_GOAL_X - currentX;
+                    double deltaY = RED_GOAL_Y - currentY;
 
                     double targetHeading = Math.toDegrees(Math.atan2(deltaX, deltaY));
 
                     double normalizedHeadingInDeg = headingInDeg;
-                    while (normalizedHeadingInDeg > 180)  normalizedHeadingInDeg -= 360;
+                    while (normalizedHeadingInDeg > 180) normalizedHeadingInDeg -= 360;
                     while (normalizedHeadingInDeg <= -180) normalizedHeadingInDeg += 360;
 
                     double error = targetHeading - normalizedHeadingInDeg;
-                    while (error > 180)  error -= 360;
+                    while (error > 180) error -= 360;
                     while (error <= -180) error += 360;
 
                     if (Math.abs(error) < TOLERANCE_DEGREES) {
@@ -177,21 +207,21 @@ public class OpModeRed extends LinearOpMode {
                     double rotatedY = inputX * Math.sin(headingRadians) + inputY * Math.cos(headingRadians);
 
                     drive.setDrivePowers(new PoseVelocity2d(
-                            new Vector2d(rotatedY, rotatedX),
-                            inputRx
+                            new Vector2d(rotatedY, rotatedX), inputRx
                     ));
 
                     telemetry.addLine("rotatedX: " + rotatedX);
-                    telemetry.addLine("rotatedY: "+ rotatedY);
+                    telemetry.addLine("rotatedY: " + rotatedY);
 
                     // reset field centric drive
                     if (gamepad1.dpadDownWasPressed()) {
-                        pinpointLocalizer.setPose(new Pose2d(0, 0, 0));                    }
+                        pinpointLocalizer.setPose(new Pose2d(0, 0, 0));
+                    }
                 }
             }
 
             if (intake != null) intake.updateIntake(gamepad1);
-            if (flywheel!= null) flywheel.updateShooter(gamepad1);
+            if (flywheel != null) flywheel.updateShooter(gamepad1);
             if (storage != null) storage.updateStorage(gamepad1);
             if (localize != null) localize.update();
 
@@ -225,7 +255,9 @@ public class OpModeRed extends LinearOpMode {
                         storage.setPower(0);
                     }
                 } else if (intake != null && intake.isIntaking()) {
-                    if (beunServo != null) {beunServo.setPosition(1);}
+                    if (beunServo != null) {
+                        beunServo.setPosition(1);
+                    }
                     storage.setPower(0.8);
                 } else {
                     storage.setPower(0);

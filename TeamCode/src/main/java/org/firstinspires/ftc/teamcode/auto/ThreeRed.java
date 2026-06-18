@@ -1,19 +1,18 @@
 package org.firstinspires.ftc.teamcode.auto;
 
+import org.firstinspires.ftc.teamcode.Constants;
+import org.firstinspires.ftc.teamcode.subsystems.drive.MecanumDriveRR;
+import org.firstinspires.ftc.teamcode.tuning.TuningOpModes;
+
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.Constants;
-import org.firstinspires.ftc.teamcode.subsystems.drive.MecanumDriveRR;
-import org.firstinspires.ftc.teamcode.tuning.TuningOpModes;
-
-//@Autonomous(name = "3x red")
+// @Autonomous(name = "3x red")
 public final class ThreeRed extends LinearOpMode {
 
     @Override
@@ -25,11 +24,31 @@ public final class ThreeRed extends LinearOpMode {
 
         if (TuningOpModes.DRIVE_CLASS.equals(MecanumDriveRR.class)) {
             MecanumDriveRR drive = new MecanumDriveRR(hardwareMap, new Pose2d(0, 0, 0));
-            try { s = hardwareMap.dcMotor.get("shooter"); } catch (Exception e) { telemetry.addLine("Missing: shooter"); }
-            try { st = hardwareMap.dcMotor.get("storage"); } catch (Exception e) { telemetry.addLine("Missing: storage"); }
-            try { i = hardwareMap.dcMotor.get("intake"); } catch (Exception e) { telemetry.addLine("Missing: intake"); }
-            try { shootServo = hardwareMap.servo.get("shoot_servo"); } catch (Exception e) { telemetry.addLine("Missing: shooting servo"); }
-            try { blockServo = hardwareMap.servo.get("block_servo"); } catch (Exception e) { telemetry.addLine("Missing: blocking servo"); }
+            try {
+                s = hardwareMap.dcMotor.get("shooter");
+            } catch (Exception e) {
+                telemetry.addLine("Missing: shooter");
+            }
+            try {
+                st = hardwareMap.dcMotor.get("storage");
+            } catch (Exception e) {
+                telemetry.addLine("Missing: storage");
+            }
+            try {
+                i = hardwareMap.dcMotor.get("intake");
+            } catch (Exception e) {
+                telemetry.addLine("Missing: intake");
+            }
+            try {
+                shootServo = hardwareMap.servo.get("shoot_servo");
+            } catch (Exception e) {
+                telemetry.addLine("Missing: shooting servo");
+            }
+            try {
+                blockServo = hardwareMap.servo.get("block_servo");
+            } catch (Exception e) {
+                telemetry.addLine("Missing: blocking servo");
+            }
 
 
             if (s != null) s.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -44,9 +63,7 @@ public final class ThreeRed extends LinearOpMode {
             s.setPower(Constants.DEFAULT_SHOOTER_SPEED);
 
             Actions.runBlocking(
-                    drive.actionBuilder(beginPose)
-                            .strafeTo(new Vector2d(-10/2.54, 0))
-                            .build());
+                    drive.actionBuilder(beginPose).strafeTo(new Vector2d(-10 / 2.54, 0)).build());
             sleep(4000);
 
             i.setPower(1);

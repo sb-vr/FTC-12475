@@ -11,7 +11,6 @@ public class IntakeIO {
     private boolean isIntaking = false;
 
 
-
     public IntakeIO(DcMotor i) {
         this.i = i;
     }

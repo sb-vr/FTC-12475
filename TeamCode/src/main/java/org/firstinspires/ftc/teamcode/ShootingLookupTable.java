@@ -2,18 +2,15 @@ package org.firstinspires.ftc.teamcode;
 
 public class ShootingLookupTable {
 
-    private static final double[] DISTANCES = {
-            10, 36, 48, 60, 72, 84, 96, 110
+    private static final double[] DISTANCES = {10, 36, 48, 60, 72, 84, 96, 110
     };
 
     // RPM omgezet naar ticks per seconde (28 ticks/rev)
     // rpm / 60 * 28
-    private static final double[] FLYWHEEL_VELOCITIES = {
-            1400, 1500, 1620, 1710, 1840, 1950, 2040, 2100
+    private static final double[] FLYWHEEL_VELOCITIES = {1400, 1500, 1620, 1710, 1840, 1950, 2040, 2100
     };
 
-    private static final double[] HOOD_ANGLES = {
-            15, 18, 20, 29, 32, 35, 38, 40
+    private static final double[] HOOD_ANGLES = {15, 18, 20, 29, 32, 35, 38, 40
     };
 
     public static double getFlywheelVelocity(double distance) {

@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode.subsystems.flywheel;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 @Config
@@ -27,10 +27,7 @@ public class FlywheelIO {
 
     public void updateShooter(Gamepad gamepad1) {
         s1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(
-                P,
-                I,
-                D,
-                F
+                P, I, D, F
         ));
 
         if (gamepad1.rightBumperWasPressed()) {

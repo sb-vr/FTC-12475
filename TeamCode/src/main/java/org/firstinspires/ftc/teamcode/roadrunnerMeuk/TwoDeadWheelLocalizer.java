@@ -1,5 +1,11 @@
 package org.firstinspires.ftc.teamcode.roadrunnerMeuk;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.roadrunnerMeuk.messages.TwoDeadWheelInputsMessage;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.DualNum;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -18,22 +24,16 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
-import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.roadrunnerMeuk.messages.TwoDeadWheelInputsMessage;
-
 @Config
 public final class TwoDeadWheelLocalizer implements Localizer {
     public static class Params {
         // Parallel encoder offsets from robot center
-        public double parXTicks = 4.5/(Math.PI*1.26) * 8192;
-        public double parYTicks = 2.44/(Math.PI*1.26) * 8192;
+        public double parXTicks = 4.5 / (Math.PI * 1.26) * 8192;
+        public double parYTicks = 2.44 / (Math.PI * 1.26) * 8192;
 
         // Perpendicular encoder offsets from robot center
-        public double perpXTicks = -4.5/(Math.PI*1.26) * 8192;
-        public double perpYTicks = 2.44/(Math.PI*1.26) * 8192;
+        public double perpXTicks = -4.5 / (Math.PI * 1.26) * 8192;
+        public double perpYTicks = 2.44 / (Math.PI * 1.26) * 8192;
     }
 
     public static Params PARAMS = new Params();
@@ -81,11 +81,7 @@ public final class TwoDeadWheelLocalizer implements Localizer {
         YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
         AngularVelocity angularVelocityDegrees = imu.getRobotAngularVelocity(AngleUnit.DEGREES);
         AngularVelocity angularVelocity = new AngularVelocity(
-                UnnormalizedAngleUnit.RADIANS,
-                (float) Math.toRadians(angularVelocityDegrees.xRotationRate),
-                (float) Math.toRadians(angularVelocityDegrees.yRotationRate),
-                (float) Math.toRadians(angularVelocityDegrees.zRotationRate),
-                angularVelocityDegrees.acquisitionTime
+                UnnormalizedAngleUnit.RADIANS, (float) Math.toRadians(angularVelocityDegrees.xRotationRate), (float) Math.toRadians(angularVelocityDegrees.yRotationRate), (float) Math.toRadians(angularVelocityDegrees.zRotationRate), angularVelocityDegrees.acquisitionTime
         );
 
         FlightRecorder.write("TWO_DEAD_WHEEL_INPUTS", new TwoDeadWheelInputsMessage(parPosVel, perpPosVel, angles, angularVelocity));
@@ -116,18 +112,10 @@ public final class TwoDeadWheelLocalizer implements Localizer {
         // Apply both X and Y offsets for parallel and perpendicular encoders
         Twist2dDual<Time> twist = new Twist2dDual<>(
                 new Vector2dDual<>(
-                        new DualNum<Time>(new double[] {
-                                parPosDelta - PARAMS.parYTicks * headingDelta + PARAMS.parXTicks * headingDelta,
-                                parPosVel.velocity - PARAMS.parYTicks * headingVel + PARAMS.parXTicks * headingVel
-                        }).times(inPerTick),
-                        new DualNum<Time>(new double[] {
-                                perpPosDelta - PARAMS.perpXTicks * headingDelta + PARAMS.perpYTicks * headingDelta,
-                                perpPosVel.velocity - PARAMS.perpXTicks * headingVel + PARAMS.perpYTicks * headingVel
+                        new DualNum<Time>(new double[]{parPosDelta - PARAMS.parYTicks * headingDelta + PARAMS.parXTicks * headingDelta, parPosVel.velocity - PARAMS.parYTicks * headingVel + PARAMS.parXTicks * headingVel
+                        }).times(inPerTick), new DualNum<Time>(new double[]{perpPosDelta - PARAMS.perpXTicks * headingDelta + PARAMS.perpYTicks * headingDelta, perpPosVel.velocity - PARAMS.perpXTicks * headingVel + PARAMS.perpYTicks * headingVel
                         }).times(inPerTick)
-                ),
-                new DualNum<>(new double[] {
-                        headingDelta,
-                        headingVel,
+                ), new DualNum<>(new double[]{headingDelta, headingVel,
                 })
         );
 

@@ -19,7 +19,7 @@ public class HoodIO {
     public static double MOUNTING_OFFSET_DEGREES = 0.0;
 
     public HoodIO(Servo h) {
-        this.h =h;
+        this.h = h;
     }
 
     //set's position of hood between 15 en 40 degrees

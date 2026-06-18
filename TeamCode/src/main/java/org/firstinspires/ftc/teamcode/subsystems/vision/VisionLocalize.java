@@ -1,11 +1,11 @@
 package org.firstinspires.ftc.teamcode.subsystems.vision;
 
+import java.util.List;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-
-import java.util.List;
 
 public class VisionLocalize {
     private VisionIO vision;
