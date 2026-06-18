@@ -6,8 +6,6 @@ import static org.firstinspires.ftc.teamcode.subsystems.constants.FlywheelConsta
 import static org.firstinspires.ftc.teamcode.subsystems.constants.FlywheelConstants.I;
 import static org.firstinspires.ftc.teamcode.subsystems.constants.FlywheelConstants.P;
 
-import org.firstinspires.ftc.teamcode.subsystems.flywheel.FlywheelIO;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
