@@ -12,6 +12,11 @@
 // Custom definitions may go here
 
 // Include common definitions from above.
+
+plugins {
+    id "com.diffplug.spotless" version "8.7.0"
+}
+
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
 
@@ -36,4 +41,30 @@ dependencies {
     implementation "com.acmerobotics.roadrunner:core:1.0.1"
     implementation "com.acmerobotics.roadrunner:actions:1.0.1"
     implementation "com.acmerobotics.dashboard:dashboard:0.5.0"
+}
+
+tasks.named("preBuild") {
+    dependsOn("spotlessApply")
+}
+
+spotless {
+    java {
+        target 'src/**/*.java'
+
+        eclipse().configFile('config/eclipse-formatter.xml')
+
+        removeUnusedImports()
+        importOrder('java', 'javax', 'org', 'com')
+
+        trimTrailingWhitespace()
+        endWithNewline()
+        indentWithSpaces(4)
+    }
+
+    format 'misc', {
+        target '*.gradle', '*.md', '.gitignore', '.gitattributes'
+        trimTrailingWhitespace()
+        indentWithSpaces(2)
+        endWithNewline()
+    }
 }

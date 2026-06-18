@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode.roadrunnerMeuk.messages;
 
-import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
-
 import java.util.List;
+
+import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 
 public final class TankLocalizerInputsMessage {
     public long timestamp;
