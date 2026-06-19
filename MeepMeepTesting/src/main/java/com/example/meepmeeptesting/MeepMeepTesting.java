@@ -1,44 +1,55 @@
 package com.example.meepmeeptesting;
 
-import com.acmerobotics.roadrunner.Pose2d;
-import com.noahbres.meepmeep.MeepMeep;
-import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
-import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+
+import org.rowlandhall.meepmeep.MeepMeep;
+import org.rowlandhall.meepmeep.roadrunner.DefaultBotBuilder;
+import org.rowlandhall.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
 public class MeepMeepTesting {
     public static void main(String[] args) {
+
         MeepMeep meepMeep = new MeepMeep(800);
 
-        double inPerTick = (Math.PI * (32.0 / 25.4)) / 2000;
-        double trackWidthTicks = 5388.626357451902;
-        double trackWidth = trackWidthTicks * inPerTick;
+        Pose2d startPose = new Pose2d(
+                10.46 - 72,
+                133.54 - 72,
+                Math.toRadians(45)
+        );
 
-        RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
+        RoadRunnerBotEntity bot = new DefaultBotBuilder(meepMeep)
                 .setConstraints(
-                        50,
-                        50,
-                        Math.PI,
-                        Math.PI,
-                        trackWidth
+                        50, 50,
+                        Math.toRadians(180),
+                        Math.toRadians(180),
+                        15
                 )
-                .build();
+                .followTrajectorySequence(drive ->
+                        drive.trajectorySequenceBuilder(startPose)
 
+                                .waitSeconds(2.0)
+                                .waitSeconds(3.0)
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(0, 0, 0))
-                .lineToX(30)
-                .turn(Math.toRadians(90))
-                .lineToY(30)
-                .turn(Math.toRadians(90))
-                .lineToX(0)
-                .turn(Math.toRadians(90))
-                .lineToY(0)
-                .turn(Math.toRadians(90))
-                .build());
+                                .turn(Math.toRadians(-45))
+
+                                .forward(60)
+
+                                .waitSeconds(1.0)
+
+                                .back(60)
+
+                                .turn(Math.toRadians(-45))
+
+                                .waitSeconds(2.0)
+                                .waitSeconds(5.0)
+
+                                .build()
+                );
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_POWERPLAY_OFFICIAL)
                 .setDarkMode(true)
                 .setBackgroundAlpha(0.95f)
-                .addEntity(myBot)
+                .addEntity(bot)
                 .start();
     }
 }
