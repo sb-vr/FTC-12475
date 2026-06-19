@@ -7,8 +7,7 @@ import org.firstinspires.ftc.teamcode.roadrunnerMeuk.PinpointLocalizer;
 import org.firstinspires.ftc.teamcode.subsystems.ballstopper.BallstopperIO;
 import org.firstinspires.ftc.teamcode.subsystems.drive.MecanumDriveRR;
 import org.firstinspires.ftc.teamcode.subsystems.flywheel.FlywheelIO;
-//import org.firstinspires.ftc.teamcode.subsystems.hood.HoodIO;
-import org.firstinspires.ftc.teamcode.subsystems.hood.HoodIO; // Met een hoofdletter O
+import org.firstinspires.ftc.teamcode.subsystems.hood.HoodIO;
 import org.firstinspires.ftc.teamcode.subsystems.intake.IntakeIO;
 import org.firstinspires.ftc.teamcode.subsystems.storage.StorageIO;
 import org.firstinspires.ftc.teamcode.subsystems.vision.VisionIO;
