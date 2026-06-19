@@ -7,7 +7,8 @@ import org.firstinspires.ftc.teamcode.roadrunnerMeuk.PinpointLocalizer;
 import org.firstinspires.ftc.teamcode.subsystems.ballstopper.BallstopperIO;
 import org.firstinspires.ftc.teamcode.subsystems.drive.MecanumDriveRR;
 import org.firstinspires.ftc.teamcode.subsystems.flywheel.FlywheelIO;
-import org.firstinspires.ftc.teamcode.subsystems.hood.HoodIO;
+//import org.firstinspires.ftc.teamcode.subsystems.hood.HoodIO;
+import org.firstinspires.ftc.teamcode.subsystems.hood.HoodIO; // Met een hoofdletter O
 import org.firstinspires.ftc.teamcode.subsystems.intake.IntakeIO;
 import org.firstinspires.ftc.teamcode.subsystems.storage.StorageIO;
 import org.firstinspires.ftc.teamcode.subsystems.vision.VisionIO;
@@ -34,6 +35,8 @@ public abstract class MainOpMode extends LinearOpMode {
     protected abstract double getGoalY();
 
     protected abstract int getAllianceID();
+
+    protected abstract Pose2d getResetPoint();
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -133,8 +136,8 @@ public abstract class MainOpMode extends LinearOpMode {
             }
 
             if (gamepad1.dpadUpWasPressed()) {
-                if (drive != null && drive.localizer != null) {
-                    drive.localizer.setPose(new Pose2d(137.7, 9, Math.toRadians(180)));
+                if (pinpointLocalizer != null) {
+                    pinpointLocalizer.setPose(getResetPoint());
                 }
             }
 
@@ -143,13 +146,12 @@ public abstract class MainOpMode extends LinearOpMode {
             if (pinpointLocalizer != null) {
                 currentPinpointPose = pinpointLocalizer.getPose();
                 headingInRad = currentPinpointPose.heading.toDouble();
-                telemetry.addData("Pinpoint Heading (Deg)", Math.toDegrees(headingInRad));
             }
             double headingDegrees = Math.toDegrees(headingInRad);
 
             Pose3D currentPosition = (localize != null) ? localize.getLastPose() : null;
 
-            isAligning = gamepad1.x && (currentPosition != null);
+            isAligning = gamepad1.xWasPressed() && (currentPosition != null);
             if (isAligning) {
                 assert currentPinpointPose != null;
                 double currentX = -currentPinpointPose.position.x;
@@ -170,6 +172,7 @@ public abstract class MainOpMode extends LinearOpMode {
 
                 if (Math.abs(error) < TOLERANCE_DEGREES) {
                     drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
+                    isAligning = false;
                 } else {
                     double turnPower = error * Kp;
                     double maxTurnPower = 0.4;
@@ -203,7 +206,7 @@ public abstract class MainOpMode extends LinearOpMode {
 
                 // reset field centric drive
                 if (gamepad1.dpadDownWasPressed()) {
-                    pinpointLocalizer.setPose(new Pose2d(0, 0, 0));
+                    drive.localizer.setPose(new Pose2d(0, 0, 0));
                 }
             }
 
@@ -215,7 +218,6 @@ public abstract class MainOpMode extends LinearOpMode {
 
             if (distance > 0) {
                 double targetVelocity = ShootingLookupTable.getFlywheelVelocity(distance);
-                telemetry.addLine("Target velocity: " + targetVelocity);
                 double targetHoodAngle = ShootingLookupTable.getHoodAngle(distance);
 
                 if (flywheel != null) {
@@ -237,8 +239,8 @@ public abstract class MainOpMode extends LinearOpMode {
                     if (beunServo != null) {
                         beunServo.setPosition(0.45);
                     }
-                    if (timer.milliseconds() >= 2000) {
-                        storage.setPower(0.8);
+                    if (timer.milliseconds() >= 1400) {
+                        storage.setPower(0.7);
                     } else {
                         storage.setPower(0);
                     }
@@ -246,20 +248,19 @@ public abstract class MainOpMode extends LinearOpMode {
                     if (beunServo != null) {
                         beunServo.setPosition(1);
                     }
-                    storage.setPower(0.8);
+                    storage.setPower(0.7);
                 } else {
                     storage.setPower(0);
                 }
             }
 
             telemetry.addData("targetHeading: ", Double.toString(headingDegrees));
-            telemetry.addData("targetHeading: ", currentPinpointPose.heading);
-            telemetry.addData("pinpoint: ", pinpointLocalizer.getPose().heading);
+            telemetry.addData("currentHeading: ", pinpointLocalizer.getPose().heading);
             telemetry.addData("pinpointX", currentPinpointPose.position.x);
             telemetry.addData("pinpointY", currentPinpointPose.position.y);
 
 
-            telemetry.addLine(Double.toString(distance));
+            telemetry.addLine("distance: " + distance);
             if (ballstopper != null) {
                 telemetry.addLine(Double.toString(ballstopper.getPosition()));
             }
@@ -267,7 +268,7 @@ public abstract class MainOpMode extends LinearOpMode {
             telemetry.addLine(Double.toString(ShootingLookupTable.getHoodAngle(distance)));
 
             telemetry.update();
-            if (vision != null) vision.stop();
         }
+        if (vision != null) vision.stop();
     }
 }

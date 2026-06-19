@@ -5,9 +5,9 @@ public class Constants {
     public static int ALLIANCE_TAG_ID_BLUE = 20;
 
     public static int ALLIANCE_TAG_ID_RED = 24;
-    public static final double RED_GOAL_X = 144.0;
-    public static final double RED_GOAL_Y = 144.0;
+    public static final double RED_GOAL_X = 72;
+    public static final double RED_GOAL_Y = 72;
 
-    public static final double BLUE_GOAL_X = 0.0;
-    public static final double BLUE_GOAL_Y = 144.0;
+    public static final double BLUE_GOAL_X = -72;
+    public static final double BLUE_GOAL_Y = 72;
 }
