@@ -6,8 +6,10 @@ import static org.firstinspires.ftc.teamcode.subsystems.constants.HoodConstants.
 import static org.firstinspires.ftc.teamcode.subsystems.constants.HoodConstants.MIN_HOOD_ANGLE;
 import static org.firstinspires.ftc.teamcode.subsystems.constants.HoodConstants.SERVO_RANGE_DEGREES;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.Servo;
 
+//@Config
 public class HoodIO {
     private final Servo h;
 

@@ -7,7 +7,7 @@ public class ShootingLookupTable {
 
     // RPM omgezet naar ticks per seconde (28 ticks/rev)
     // rpm / 60 * 28
-    private static final double[] FLYWHEEL_VELOCITIES = {1400, 1500, 1620, 1710, 1840, 1950, 2040, 2100
+    private static final double[] FLYWHEEL_VELOCITIES = {1400, 1500, 1620, 1680, 1840, 1950, 2040, 2100
     };
 
     private static final double[] HOOD_ANGLES = {15, 18, 20, 29, 32, 35, 38, 40

@@ -26,14 +26,16 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 public abstract class MainOpMode extends LinearOpMode {
     private boolean isAligning = false;
-    private final double Kp = -0.02;
-    private final double TOLERANCE_DEGREES = 2;
+    private final double Kp = -0.022;
+    private final double TOLERANCE_DEGREES = 1;
 
     protected abstract double getGoalX();
 
     protected abstract double getGoalY();
 
     protected abstract int getAllianceID();
+
+    protected abstract Pose2d getResetPoint();
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -81,7 +83,6 @@ public abstract class MainOpMode extends LinearOpMode {
         } catch (Exception e) {
             telemetry.addLine("Missing: PinpointLocalizer initialisatie mislukt!");
         }
-
         try {
             camera = hardwareMap.get(WebcamName.class, "Webcam 1");
         } catch (Exception e) {
@@ -112,15 +113,12 @@ public abstract class MainOpMode extends LinearOpMode {
 
         VisionIO vision = (camera != null) ? new VisionIO(camera) : null;
 
-        VisionLocalize localize = (vision != null) ? new VisionLocalize(vision) : null;
+//        VisionLocalize localize = (vision != null) ? new VisionLocalize(vision) : null;
 
         waitForStart();
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            if (localize != null) {
-                localize.update();
-            }
 
             if (pinpointLocalizer != null) {
                 pinpointLocalizer.update();
@@ -133,8 +131,8 @@ public abstract class MainOpMode extends LinearOpMode {
             }
 
             if (gamepad1.dpadUpWasPressed()) {
-                if (drive != null && drive.localizer != null) {
-                    drive.localizer.setPose(new Pose2d(137.7, 9, Math.toRadians(180)));
+                if (pinpointLocalizer != null) {
+                    pinpointLocalizer.setPose(getResetPoint());
                 }
             }
 
@@ -143,55 +141,67 @@ public abstract class MainOpMode extends LinearOpMode {
             if (pinpointLocalizer != null) {
                 currentPinpointPose = pinpointLocalizer.getPose();
                 headingInRad = currentPinpointPose.heading.toDouble();
-                telemetry.addData("Pinpoint Heading (Deg)", Math.toDegrees(headingInRad));
             }
             double headingDegrees = Math.toDegrees(headingInRad);
 
-            Pose3D currentPosition = (localize != null) ? localize.getLastPose() : null;
+            // 1. Schakel het alignen IN als er op X wordt gedrukt en we een geldige positie hebben
+            if (gamepad1.xWasPressed()) {
+                isAligning = true;
+            }
 
-            isAligning = gamepad1.x && (currentPosition != null);
+            // 2. INTERRUPT: Als de joysticks worden bewogen tijdens het alignen, breek dan direct af
             if (isAligning) {
-                assert currentPinpointPose != null;
-                double currentX = -currentPinpointPose.position.x;
-                double currentY = -currentPinpointPose.position.y;
+                if (Math.abs(gamepad1.left_stick_x) > 0.1 || Math.abs(gamepad1.left_stick_y) > 0.1 || Math.abs(gamepad1.right_stick_x) > 0.1) {
 
-                double deltaX = getGoalX() - currentX;
-                double deltaY = getGoalY() - currentY;
-
-
-                double targetHeading = Math.toDegrees(Math.atan2(deltaY, deltaX));
-                double normalizedHeadingInDeg = headingDegrees;
-                while (normalizedHeadingInDeg > 180) normalizedHeadingInDeg -= 360;
-                while (normalizedHeadingInDeg <= -180) normalizedHeadingInDeg += 360;
-
-                double error = targetHeading - normalizedHeadingInDeg;
-                while (error > 180) error -= 360;
-                while (error <= -180) error += 360;
-
-                if (Math.abs(error) < TOLERANCE_DEGREES) {
-                    drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
-                } else {
-                    double turnPower = error * Kp;
-                    double maxTurnPower = 0.4;
-                    turnPower = Math.max(-maxTurnPower, Math.min(maxTurnPower, turnPower));
-
-                    if (Math.abs(turnPower) < 0.05) {
-                        turnPower = Math.signum(turnPower) * 0.05;
-                    }
-                    drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), turnPower));
+                    isAligning = false; // Terug naar field-centric drive
                 }
+            }
 
+            // 3. Voer de juiste drive-modus uit
+            if (isAligning) {
+                if (currentPinpointPose == null) {
+                    isAligning = false;
+                } else {
+                    double currentX = -currentPinpointPose.position.x;
+                    double currentY = -currentPinpointPose.position.y;
+
+                    double deltaX = getGoalX() - currentX;
+                    double deltaY = getGoalY() - currentY;
+
+                    System.out.println("DX DY: " + deltaX + " , " + deltaY);
+
+                    double targetHeading = Math.toDegrees(Math.atan2(deltaY, deltaX));
+                    double normalizedHeadingInDeg = headingDegrees;
+                    while (normalizedHeadingInDeg > 180) normalizedHeadingInDeg -= 360;
+                    while (normalizedHeadingInDeg <= -180) normalizedHeadingInDeg += 360;
+
+                    double error = targetHeading - normalizedHeadingInDeg;
+                    while (error > 180) error -= 360;
+                    while (error <= -180) error += 360;
+
+                    if (Math.abs(error) < TOLERANCE_DEGREES) {
+                        drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
+                        isAligning = false;
+                    } else {
+                        double turnPower = -error * Kp;
+                        double maxTurnPower = 0.4;
+                        turnPower = Math.max(-maxTurnPower, Math.min(maxTurnPower, turnPower));
+
+                        if (Math.abs(turnPower) < 0.05) {
+                            turnPower = Math.signum(turnPower) * 0.05;
+                        }
+                        drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), turnPower));
+                    }
+                }
             } else {
-                // Drive is now field-centric
+                // ---- FIELD-CENTRIC DRIVE MODUS ----
                 drive.updatePoseEstimate();
                 Pose2d currentPose = drive.localizer.getPose();
 
-                //Joystick input
-                double inputY = -gamepad1.left_stick_y;
-                double inputX = gamepad1.left_stick_x;
-                double inputRx = gamepad1.right_stick_x;
-
-                inputY = -inputY;
+                // Joystick input
+                double inputY = -gamepad1.left_stick_y; // Min-teken weggehaald omdat het elkaar ophief met inputY = -inputY
+                double inputX = -gamepad1.left_stick_x;
+                double inputRx = -gamepad1.right_stick_x;
 
                 double headingRadians = currentPose.heading.toDouble();
                 double rotatedX = inputX * Math.cos(headingRadians) - inputY * Math.sin(headingRadians);
@@ -201,12 +211,11 @@ public abstract class MainOpMode extends LinearOpMode {
                         new Vector2d(rotatedY, rotatedX), inputRx
                 ));
 
-                // reset field centric drive
+                // Reset field-centric drive heading naar 0
                 if (gamepad1.dpadDownWasPressed()) {
-                    pinpointLocalizer.setPose(new Pose2d(0, 0, 0));
+                    drive.localizer.setPose(new Pose2d(0, 0, 0));
                 }
             }
-
 
             if (intake != null) intake.updateIntake(gamepad1);
             if (flywheel != null) flywheel.updateShooter(gamepad1);
@@ -215,7 +224,6 @@ public abstract class MainOpMode extends LinearOpMode {
 
             if (distance > 0) {
                 double targetVelocity = ShootingLookupTable.getFlywheelVelocity(distance);
-                telemetry.addLine("Target velocity: " + targetVelocity);
                 double targetHoodAngle = ShootingLookupTable.getHoodAngle(distance);
 
                 if (flywheel != null) {
@@ -237,8 +245,8 @@ public abstract class MainOpMode extends LinearOpMode {
                     if (beunServo != null) {
                         beunServo.setPosition(0.45);
                     }
-                    if (timer.milliseconds() >= 2000) {
-                        storage.setPower(0.8);
+                    if (timer.milliseconds() >= 1400) {
+                        storage.setPower(0.7);
                     } else {
                         storage.setPower(0);
                     }
@@ -246,20 +254,25 @@ public abstract class MainOpMode extends LinearOpMode {
                     if (beunServo != null) {
                         beunServo.setPosition(1);
                     }
-                    storage.setPower(0.8);
+                    storage.setPower(0.7);
                 } else {
                     storage.setPower(0);
                 }
             }
 
             telemetry.addData("targetHeading: ", Double.toString(headingDegrees));
-            telemetry.addData("targetHeading: ", currentPinpointPose.heading);
-            telemetry.addData("pinpoint: ", pinpointLocalizer.getPose().heading);
-            telemetry.addData("pinpointX", currentPinpointPose.position.x);
-            telemetry.addData("pinpointY", currentPinpointPose.position.y);
+            if (pinpointLocalizer != null) {
+                telemetry.addData("currentHeading: ", pinpointLocalizer.getPose().heading);
+            }
+            if (currentPinpointPose != null) {
+                telemetry.addData("pinpointX", currentPinpointPose.position.x);
+            }
+            if (currentPinpointPose != null) {
+                telemetry.addData("pinpointY", currentPinpointPose.position.y);
+            }
 
 
-            telemetry.addLine(Double.toString(distance));
+            telemetry.addLine("distance: " + distance);
             if (ballstopper != null) {
                 telemetry.addLine(Double.toString(ballstopper.getPosition()));
             }
@@ -267,7 +280,7 @@ public abstract class MainOpMode extends LinearOpMode {
             telemetry.addLine(Double.toString(ShootingLookupTable.getHoodAngle(distance)));
 
             telemetry.update();
-            if (vision != null) vision.stop();
         }
+        if (vision != null) vision.stop();
     }
 }

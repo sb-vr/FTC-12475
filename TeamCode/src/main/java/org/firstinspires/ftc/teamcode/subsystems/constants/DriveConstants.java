@@ -12,9 +12,9 @@ public class DriveConstants {
     public double trackWidthTicks = 5388.626357451902;
 
     // feedforward parameters (in tick units)
-    public double kS = 0.9252953786341847;
-    public double kV = 0.000280281340167147;
-    public double kA = 0.00018;
+    public double kS = 1.1852953786341847;
+    public double kV = 0.00026281340167147;
+    public double kA = 0.000054;
 
     // path profile parameters (in inches)
     public double maxWheelVel = 50;
@@ -26,9 +26,9 @@ public class DriveConstants {
     public double maxAngAccel = java.lang.Math.PI;
 
     // path controller gains
-    public double axialGain = 2;
-    public double lateralGain = 6;
-    public double headingGain = 1; // shared with turn
+    public double axialGain = 5;
+    public double lateralGain = 3;
+    public double headingGain = 7; // shared with turn
 
     public double axialVelGain = 0.0;
     public double lateralVelGain = 0.0;
