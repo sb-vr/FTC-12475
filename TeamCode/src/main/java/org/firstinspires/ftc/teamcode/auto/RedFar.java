@@ -23,8 +23,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @Config
-@Autonomous(name = "FirstAutonoomBlue", group = "Autonomous")
-public class Blue extends LinearOpMode {
+@Autonomous(name = "RedFar", group = "Autonomous")
+public class RedFar extends LinearOpMode {
 
     @Override
     public void runOpMode() {
@@ -72,7 +72,6 @@ public class Blue extends LinearOpMode {
                 telemetry.addLine("Missing: hood");
             }
 
-
             telemetry.update();
 
             if (s1 != null) {
@@ -86,13 +85,9 @@ public class Blue extends LinearOpMode {
             MecanumDriveRR drive = new MecanumDriveRR(hardwareMap, beginPose[0]);
 
             FlywheelIO flywheel = (s1 != null && s2 != null) ? new FlywheelIO(s1, s2) : null;
-
             StorageIO storage = (st != null) ? new StorageIO(st) : null;
-
             IntakeIO intake = (i != null) ? new IntakeIO(i) : null;
-
             VisionIO vision = (camera != null) ? new VisionIO(camera) : null;
-
             HoodIO hood = (h != null) ? new HoodIO(h) : null;
 
             double distance;
@@ -105,31 +100,33 @@ public class Blue extends LinearOpMode {
 
             waitForStart();
             if (isStopRequested()) return;
-
+            //ToDo: chekc what the + 800 has to be its guesed for now
             Actions.runBlocking(
                     drive.actionBuilder(beginPose[0])
                             .afterTime(0, packet -> {
                                 if (intake != null) intake.setPower(1);
                                 return false;
                             })
-                            .lineToXSplineHeading(-40, 0)
                             .afterTime(0, packet -> {
-                                if (flywheel != null) flywheel.setAutonomousShoootingVelocity(ShootingLookupTable.getFlywheelVelocity(distance));
+                                if (flywheel != null) flywheel.setAutonomousShoootingVelocity(ShootingLookupTable.getFlywheelVelocity(distance)+800);
                                 if (hood != null) hood.setHoodAngle(ShootingLookupTable.getHoodAngle(distance));
                                 return false;
-
-                            }).waitSeconds(1.5).afterTime(0, packet -> {
+                            })
+                            .waitSeconds(1.5).afterTime(0, packet -> {
                                 if (storage != null) storage.setPower(0.7);
-                                if (intake != null) intake.setPower(1);
                                 return false;
                             })
                             .waitSeconds(4).afterTime(0, packet -> {
                                 if (flywheel != null) flywheel.setAutonomousShoootingVelocity(0);
                                 if (hood != null) hood.setHoodAngle(0);
+                                if (intake != null) intake.setPower(0);
                                 return false;
                             })
-                            .turn(Math.toRadians(-90))
-                            .lineToY(20)
+                            // 1. GESPIEGELD: Draai -80 graden (met de klok mee naar de rode kant)
+                            .turn(Math.toRadians(-80))
+
+                            // 2. GESPIEGELD: Beweeg naar Y = -30 op het veld
+                            .lineToY(30)
                             .build()
             );
         }

@@ -83,7 +83,6 @@ public abstract class MainOpMode extends LinearOpMode {
         } catch (Exception e) {
             telemetry.addLine("Missing: PinpointLocalizer initialisatie mislukt!");
         }
-
         try {
             camera = hardwareMap.get(WebcamName.class, "Webcam 1");
         } catch (Exception e) {

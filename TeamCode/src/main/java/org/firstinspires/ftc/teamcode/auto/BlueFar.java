@@ -23,8 +23,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @Config
-@Autonomous(name = "FirstAutonoomBlue", group = "Autonomous")
-public class Blue extends LinearOpMode {
+@Autonomous(name = "BlueFar", group = "Autonomous")
+public class BlueFar extends LinearOpMode {
 
     @Override
     public void runOpMode() {
@@ -106,30 +106,32 @@ public class Blue extends LinearOpMode {
             waitForStart();
             if (isStopRequested()) return;
 
+            //ToDo: chekc what the + 800 has to be its guesed for now
+
+
             Actions.runBlocking(
                     drive.actionBuilder(beginPose[0])
                             .afterTime(0, packet -> {
                                 if (intake != null) intake.setPower(1);
                                 return false;
                             })
-                            .lineToXSplineHeading(-40, 0)
                             .afterTime(0, packet -> {
-                                if (flywheel != null) flywheel.setAutonomousShoootingVelocity(ShootingLookupTable.getFlywheelVelocity(distance));
+                                if (flywheel != null) flywheel.setAutonomousShoootingVelocity(ShootingLookupTable.getFlywheelVelocity(distance)+800);
                                 if (hood != null) hood.setHoodAngle(ShootingLookupTable.getHoodAngle(distance));
                                 return false;
-
-                            }).waitSeconds(1.5).afterTime(0, packet -> {
+                            })
+                            .waitSeconds(1.5).afterTime(0, packet -> {
                                 if (storage != null) storage.setPower(0.7);
-                                if (intake != null) intake.setPower(1);
                                 return false;
                             })
                             .waitSeconds(4).afterTime(0, packet -> {
                                 if (flywheel != null) flywheel.setAutonomousShoootingVelocity(0);
                                 if (hood != null) hood.setHoodAngle(0);
+                                if (intake != null) intake.setPower(0);
                                 return false;
                             })
-                            .turn(Math.toRadians(-90))
-                            .lineToY(20)
+                            .turn(Math.toRadians(80))
+                            .lineToY(30)
                             .build()
             );
         }
