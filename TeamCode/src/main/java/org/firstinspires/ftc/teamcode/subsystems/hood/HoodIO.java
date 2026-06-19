@@ -9,7 +9,7 @@ import static org.firstinspires.ftc.teamcode.subsystems.constants.HoodConstants.
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Config
+//@Config
 public class HoodIO {
     private final Servo h;
 

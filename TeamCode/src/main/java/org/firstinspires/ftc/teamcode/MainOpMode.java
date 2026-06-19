@@ -184,7 +184,7 @@ public abstract class MainOpMode extends LinearOpMode {
                         drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
                         isAligning = false;
                     } else {
-                        double turnPower = error * Kp;
+                        double turnPower = -error * Kp;
                         double maxTurnPower = 0.4;
                         turnPower = Math.max(-maxTurnPower, Math.min(maxTurnPower, turnPower));
 
@@ -200,9 +200,9 @@ public abstract class MainOpMode extends LinearOpMode {
                 Pose2d currentPose = drive.localizer.getPose();
 
                 // Joystick input
-                double inputY = gamepad1.left_stick_y; // Min-teken weggehaald omdat het elkaar ophief met inputY = -inputY
-                double inputX = gamepad1.left_stick_x;
-                double inputRx = gamepad1.right_stick_x;
+                double inputY = -gamepad1.left_stick_y; // Min-teken weggehaald omdat het elkaar ophief met inputY = -inputY
+                double inputX = -gamepad1.left_stick_x;
+                double inputRx = -gamepad1.right_stick_x;
 
                 double headingRadians = currentPose.heading.toDouble();
                 double rotatedX = inputX * Math.cos(headingRadians) - inputY * Math.sin(headingRadians);

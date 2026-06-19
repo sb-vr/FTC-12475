@@ -7,14 +7,14 @@ public class DriveConstants {
     public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection = RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD;
 
     // drive model parameters
-    public double inPerTick = (java.lang.Math.PI * (32.0 / 25.4)) / 2000;
+    public double inPerTick = (java.lang.Math.PI * (32.0 / 25.4)) / 2000; //0.001978956002261
     public double lateralInPerTick = 0.0012495431986690628;
     public double trackWidthTicks = 5388.626357451902;
 
     // feedforward parameters (in tick units)
-    public double kS = 0.9252953786341847;
-    public double kV = 0.000280281340167147;
-    public double kA = 0.00018;
+    public double kS = 1.2852953786341847;
+    public double kV = 0.00026281340167147;
+    public double kA = 0.00005;
 
     // path profile parameters (in inches)
     public double maxWheelVel = 50;
