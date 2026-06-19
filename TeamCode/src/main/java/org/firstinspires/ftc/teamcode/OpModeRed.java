@@ -23,6 +23,6 @@ public class OpModeRed extends MainOpMode {
 
     @Override
     protected Pose2d getResetPoint() {
-        return new Pose2d(-63, 63, Math.toRadians(180));
+        return new Pose2d(0, 0, Math.toRadians(0));
     }
 }

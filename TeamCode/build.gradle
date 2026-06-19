@@ -43,9 +43,9 @@ dependencies {
     implementation "com.acmerobotics.dashboard:dashboard:0.5.0"
 }
 
-tasks.named("preBuild") {
-    dependsOn("spotlessApply")
-}
+//tasks.named("preBuild") {
+//    dependsOn("spotlessApply")
+//}
 
 spotless {
     java {

@@ -26,8 +26,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 public abstract class MainOpMode extends LinearOpMode {
     private boolean isAligning = false;
-    private final double Kp = -0.02;
-    private final double TOLERANCE_DEGREES = 2;
+    private final double Kp = -0.022;
+    private final double TOLERANCE_DEGREES = 1;
 
     protected abstract double getGoalX();
 
@@ -114,15 +114,12 @@ public abstract class MainOpMode extends LinearOpMode {
 
         VisionIO vision = (camera != null) ? new VisionIO(camera) : null;
 
-        VisionLocalize localize = (vision != null) ? new VisionLocalize(vision) : null;
+//        VisionLocalize localize = (vision != null) ? new VisionLocalize(vision) : null;
 
         waitForStart();
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
-            if (localize != null) {
-                localize.update();
-            }
 
             if (pinpointLocalizer != null) {
                 pinpointLocalizer.update();
@@ -148,52 +145,64 @@ public abstract class MainOpMode extends LinearOpMode {
             }
             double headingDegrees = Math.toDegrees(headingInRad);
 
-            Pose3D currentPosition = (localize != null) ? localize.getLastPose() : null;
+            // 1. Schakel het alignen IN als er op X wordt gedrukt en we een geldige positie hebben
+            if (gamepad1.xWasPressed()) {
+                isAligning = true;
+            }
 
-            isAligning = gamepad1.xWasPressed() && (currentPosition != null);
+            // 2. INTERRUPT: Als de joysticks worden bewogen tijdens het alignen, breek dan direct af
             if (isAligning) {
-                assert currentPinpointPose != null;
-                double currentX = -currentPinpointPose.position.x;
-                double currentY = -currentPinpointPose.position.y;
+                if (Math.abs(gamepad1.left_stick_x) > 0.1 || Math.abs(gamepad1.left_stick_y) > 0.1 || Math.abs(gamepad1.right_stick_x) > 0.1) {
 
-                double deltaX = getGoalX() - currentX;
-                double deltaY = getGoalY() - currentY;
+                    isAligning = false; // Terug naar field-centric drive
+                }
+            }
 
-
-                double targetHeading = Math.toDegrees(Math.atan2(deltaY, deltaX));
-                double normalizedHeadingInDeg = headingDegrees;
-                while (normalizedHeadingInDeg > 180) normalizedHeadingInDeg -= 360;
-                while (normalizedHeadingInDeg <= -180) normalizedHeadingInDeg += 360;
-
-                double error = targetHeading - normalizedHeadingInDeg;
-                while (error > 180) error -= 360;
-                while (error <= -180) error += 360;
-
-                if (Math.abs(error) < TOLERANCE_DEGREES) {
-                    drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
+            // 3. Voer de juiste drive-modus uit
+            if (isAligning) {
+                if (currentPinpointPose == null) {
                     isAligning = false;
                 } else {
-                    double turnPower = error * Kp;
-                    double maxTurnPower = 0.4;
-                    turnPower = Math.max(-maxTurnPower, Math.min(maxTurnPower, turnPower));
+                    double currentX = -currentPinpointPose.position.x;
+                    double currentY = -currentPinpointPose.position.y;
 
-                    if (Math.abs(turnPower) < 0.05) {
-                        turnPower = Math.signum(turnPower) * 0.05;
+                    double deltaX = getGoalX() - currentX;
+                    double deltaY = getGoalY() - currentY;
+
+                    System.out.println("DX DY: " + deltaX + " , " + deltaY);
+
+                    double targetHeading = Math.toDegrees(Math.atan2(deltaY, deltaX));
+                    double normalizedHeadingInDeg = headingDegrees;
+                    while (normalizedHeadingInDeg > 180) normalizedHeadingInDeg -= 360;
+                    while (normalizedHeadingInDeg <= -180) normalizedHeadingInDeg += 360;
+
+                    double error = targetHeading - normalizedHeadingInDeg;
+                    while (error > 180) error -= 360;
+                    while (error <= -180) error += 360;
+
+                    if (Math.abs(error) < TOLERANCE_DEGREES) {
+                        drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
+                        isAligning = false;
+                    } else {
+                        double turnPower = error * Kp;
+                        double maxTurnPower = 0.4;
+                        turnPower = Math.max(-maxTurnPower, Math.min(maxTurnPower, turnPower));
+
+                        if (Math.abs(turnPower) < 0.05) {
+                            turnPower = Math.signum(turnPower) * 0.05;
+                        }
+                        drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), turnPower));
                     }
-                    drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), turnPower));
                 }
-
             } else {
-                // Drive is now field-centric
+                // ---- FIELD-CENTRIC DRIVE MODUS ----
                 drive.updatePoseEstimate();
                 Pose2d currentPose = drive.localizer.getPose();
 
-                //Joystick input
-                double inputY = -gamepad1.left_stick_y;
+                // Joystick input
+                double inputY = gamepad1.left_stick_y; // Min-teken weggehaald omdat het elkaar ophief met inputY = -inputY
                 double inputX = gamepad1.left_stick_x;
                 double inputRx = gamepad1.right_stick_x;
-
-                inputY = -inputY;
 
                 double headingRadians = currentPose.heading.toDouble();
                 double rotatedX = inputX * Math.cos(headingRadians) - inputY * Math.sin(headingRadians);
@@ -203,12 +212,11 @@ public abstract class MainOpMode extends LinearOpMode {
                         new Vector2d(rotatedY, rotatedX), inputRx
                 ));
 
-                // reset field centric drive
+                // Reset field-centric drive heading naar 0
                 if (gamepad1.dpadDownWasPressed()) {
                     drive.localizer.setPose(new Pose2d(0, 0, 0));
                 }
             }
-
 
             if (intake != null) intake.updateIntake(gamepad1);
             if (flywheel != null) flywheel.updateShooter(gamepad1);
@@ -254,9 +262,15 @@ public abstract class MainOpMode extends LinearOpMode {
             }
 
             telemetry.addData("targetHeading: ", Double.toString(headingDegrees));
-            telemetry.addData("currentHeading: ", pinpointLocalizer.getPose().heading);
-            telemetry.addData("pinpointX", currentPinpointPose.position.x);
-            telemetry.addData("pinpointY", currentPinpointPose.position.y);
+            if (pinpointLocalizer != null) {
+                telemetry.addData("currentHeading: ", pinpointLocalizer.getPose().heading);
+            }
+            if (currentPinpointPose != null) {
+                telemetry.addData("pinpointX", currentPinpointPose.position.x);
+            }
+            if (currentPinpointPose != null) {
+                telemetry.addData("pinpointY", currentPinpointPose.position.y);
+            }
 
 
             telemetry.addLine("distance: " + distance);
